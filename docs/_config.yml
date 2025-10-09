@@ -6,7 +6,7 @@ url: "https://statistics.jcondor.me"
 lang: en
 github_username: jcondor98
 
-theme: bulma-clean-theme
+remote_theme: bulma-clean-theme
 
 hide_share_buttons: true
 
