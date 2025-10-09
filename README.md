@@ -7,7 +7,7 @@ The course professor is Tommaso Gastaldi.
 
 ## Repository structure
 
-The `blog/` directory contains the contents related to the personal blog. Such
+The `docs/` directory contains the contents related to the personal blog. Such
 contents are automatically served by the [_Jekyll_](https://jekyllrb.com/) web
 engine.
 
