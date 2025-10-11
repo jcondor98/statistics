@@ -1,10 +1,8 @@
 ---
-layout: post
 title: Statistics and Cybersecurity
-subtitle: What is statistics, and why can it be useful for cybersecurity?
+description: What is Statistics, and why can it be useful for Cybersecurity
 author: Paolo Lucchesi
 date: 2025-10-09 12:00:00 +0200
-toc: true
 permalink: /homework-1/
 ---
 

@@ -1,4 +1,4 @@
-import { encrypt, decrypt, crack } from "lib";
+import { computeFrequencies, encrypt, decrypt, crack, detectLanguage } from "lib";
 
 let frequencies;
 fetch("https://cdn.jsdelivr.net/gh/jcondor98/statistics@master/homework-02/frequency-analysis/frequencies.json")
@@ -6,6 +6,11 @@ fetch("https://cdn.jsdelivr.net/gh/jcondor98/statistics@master/homework-02/frequ
   .then(f => {
     frequencies = f
   })
+
+function onAnalyse() {
+  const result = computeFrequencies(getInput());
+  setResult(JSON.stringify(result));
+}
 
 function onEncrypt() {
   const key = getKey();
@@ -31,10 +36,14 @@ function onCrack() {
   console.log(guess);
 }
 
+function onDetectLanguage() {
+  setLanguage(detectLanguage(getInput()));
+}
+
 function onReset() {
   document.getElementById("caesar-input").value = '';
-  document.getElementById("caesar-result").value = '';
-  document.getElementById("caesar-key").value = 13;
+  setResult('');
+  setKey(13);
   setLanguage();
 }
 
@@ -61,6 +70,6 @@ function setLanguage(lang) {
 
 window.caesar = {
   events: {
-    onEncrypt, onDecrypt, onReset, onCrack
+    onAnalyse, onEncrypt, onDecrypt, onCrack, onDetectLanguage, onReset,
   }
 }

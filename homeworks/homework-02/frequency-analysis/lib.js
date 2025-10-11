@@ -3,7 +3,7 @@ const LOWER_Z_CODE = 'z'.charCodeAt(0);
 const UPPER_A_CODE = 'A'.charCodeAt(0);
 const UPPER_Z_CODE = 'Z'.charCodeAt(0);
 
-const CRACK_MAX_GUESS_DISTANCE = 26;
+const FREQ_MAX_GUESS_DISTANCE = 26;
 
 /**
  * @param {number} start the start value of the range, inclusive
@@ -86,7 +86,7 @@ export function crack(ciphertext, frequencies, language) {
   if (!!language)
     return _crack(ciphertext, frequencies[language]);
 
-  let guess = { distance: CRACK_MAX_GUESS_DISTANCE };
+  let guess = { distance: FREQ_MAX_GUESS_DISTANCE };
 
   for (const l in frequencies) {
     const attempt = _crack(ciphertext, frequencies[l]);
@@ -99,30 +99,58 @@ export function crack(ciphertext, frequencies, language) {
 
 // Attempt cracking with just one language (i.e. a single set of letters frequencies)
 function _crack(ciphertext, frequencies) {
-  let key = 0;
-  let distance = CRACK_MAX_GUESS_DISTANCE;
-  const encryptedFrequencies = computeFrequencies(ciphertext);
+  const encFrequencies = computeFrequencies(ciphertext);
+  let guess = {
+    key: 0,
+    distance: FREQ_MAX_GUESS_DISTANCE
+  };
 
-  function computeDistanceForGuess(guess) {
-    let distance = 0
-
-    for (const i of range(0, 26)) {
-      const c = String.fromCharCode('a'.charCodeAt(0) + i);
-      const frequency = encryptedFrequencies[c];
-      const guessFrequency = frequencies[encrypt(c, guess)];
-      distance += Math.abs(guessFrequency - frequency);
-    }
-
-    return distance
+  for (const key of range(0, 26)) {
+    const distance = computeDistance(frequencies, encFrequencies, key);
+    if (distance < guess.distance)
+      guess = { key, distance };
   }
 
-  for (const guess of range(0, 26)) {
-    const guessDistance = computeDistanceForGuess(guess);
-    if (guessDistance < distance) {
-      key = guess;
-      distance = guessDistance;
-    }
+  return guess;
+}
+
+/**
+ * Guess the language of a text (not encrypted) using frequency analysis
+ * @param {string} text the text to analyse
+ * @param {object} frequencies the letters frequencies for all the available languages
+ * @returns {object} a guess result containing the language and the frequency analysis distance
+ */
+export function detectLanguage(text, frequencies) {
+  const textFrequencies = computeFrequencies(text);
+  let guess = {
+    language: null,
+    distance: FREQ_MAX_GUESS_DISTANCE
+  };
+
+  for (const language in frequencies) {
+    const distance = computeDistance(
+      textFrequencies, frequencies[language]);
+    if (distance < guess.distance)
+      guess = { language, distance };
   }
 
-  return { key, distance };
+  return guess;
+}
+
+/**
+ * Compute the distance between two frequency analyses.
+ * If key is specified, it will be used to shift f2 frequencies.
+ * @param {object} f1 the first frequency analysis
+ * @param {object} f2 the second frequency analysis
+ * @param {number} key the encryption key for the Caesar cipher, if cracking
+ */
+export function computeDistance(f1, f2, key = 0) {
+  let total = 0
+
+  for (const i of range(0, 26)) {
+    const c = String.fromCharCode('a'.charCodeAt(0) + i);
+    total += Math.abs(f1[c] - f2[encrypt(c, key)]);
+  }
+
+  return total;
 }

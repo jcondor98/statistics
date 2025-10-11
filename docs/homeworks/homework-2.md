@@ -386,6 +386,47 @@ We can observe that the frequencies are similar. In particular, it can be
 observed that vocals have a much higher frequencies, and unusual letters such
 as `j` and `z` have lower values.
 
+#### Bonus: Automatic language detection
+
+It is possible to use frequency analysis to automatically detect the language
+of an arbitrary text. This can be done roughly as follows:
+
+* take the frequency analyses of all the different supported languages
+* perform the frequency analysis on the chosen text
+* compare the previous analysis with all the ones relative to the supported
+  languages
+
+The frequency analysis that is closest to the one of the chosen text is the one
+relative to the detected language.
+
+An implementation of the described algorithm is given below:
+
+```js
+export function detectLanguage(text, frequencies) {
+  const textFrequencies = computeFrequencies(text);
+  let guess = {
+    language: null,
+    distance: FREQ_MAX_GUESS_DISTANCE
+  };
+
+  // `frequencies` contains the frequency analyses for all the supported languages
+  for (const language in frequencies) {
+    const distance = computeDistance(
+      textFrequencies, frequencies[language]);
+    if (distance < guess.distance)
+      guess = { language, distance }; // Found a better guess
+  }
+
+  return guess;
+}
+```
+
+We will discuss in depth how to measure the distance between two frequency
+analyses in later sections.
+
+At the end of this article, you can try this algorithm directly with the
+Caesar cipher interactive tool.
+
 ### Caesar cipher
 
 The Caesar cipher is a simple, ancient, substitution cipher that was in use
@@ -461,6 +502,9 @@ Testing decrypt() with key 13 (ROT13)
   Plaintext is correct
 ```
 
+At the end of this article, you can try these algorithms directly with the
+Caesar cipher interactive tool.
+
 ### Breaking the Caesar cipher
 
 The Caesar cipher can be broken using frequency analysis. The idea is that,
@@ -481,36 +525,33 @@ may look like the one given below:
 
 ```js
 function _crack(ciphertext, frequencies) {
-  let key = 0;
-  let distance = CRACK_MAX_GUESS_DISTANCE;
-  const encryptedFrequencies = computeFrequencies(ciphertext);
+  const encFrequencies = computeFrequencies(ciphertext);
+  let guess = {
+    key: 0,
+    distance: FREQ_MAX_GUESS_DISTANCE
+  };
 
-  // Compute the frequencies distance for key `guess`
-  function computeDistanceForGuess(guess) {
-    let distance = 0
-
-    // Accumulate distances for single letters
-    for (const i of range(0, 26)) {
-      const c = String.fromCharCode('a'.charCodeAt(0) + i);
-      const frequency = encryptedFrequencies[c];
-      const guessFrequency = frequencies[encrypt(c, guess)]; // Directly shift the frequencies to be efficient
-      distance += Math.abs(guessFrequency - frequency);
-    }
-
-    return distance
+  // Iterate over all possible keys
+  for (const key of range(0, 26)) {
+    const distance = computeDistance(frequencies, encFrequencies, key);
+    if (distance < guess.distance)
+      guess = { key, distance }; // Found a better guess
   }
 
-  // Try all the keys and find the one with the minimum distance
-  for (const guess of range(0, 26)) {
-    const guessDistance = computeDistanceForGuess(guess);
-    if (guessDistance < distance) {
-      // Found a better guess
-      key = guess;
-      distance = guessDistance;
-    }
+  return guess;
+}
+
+// Compute the distance between two frequency analyses
+// If key is specified, it will be used to shift f2 frequencies
+function computeDistance(f1, f2, key = 0) {
+  let total = 0
+
+  for (const i of range(0, 26)) {
+    const c = String.fromCharCode('a'.charCodeAt(0) + i);
+    total += Math.abs(f1[c] - f2[encrypt(c, key)]);
   }
 
-  return { key, distance };
+  return total;
 }
 ```
 
@@ -645,6 +686,9 @@ Testing crack() with key 13 (ROT13)
   Plaintext is correct
 ```
 
+Also, at the end of this article, you can try this algorithm directly with the
+Caesar cipher interactive tool.
+
 #### Bonus: Building a frequencies database
 
 To make an efficient implementation of a multi-language Caesar cipher automatic
@@ -685,14 +729,14 @@ The complete code can be found in the [`build-frequencies-db`
 file](https://github.com/jcondor98/statistics/blob/master/homework-02/frequency-analysis/build-frequencies-db.js)
 of the repository.
 
-The test suite actually given in the repository uses the pre-computed
-frequencies database in order to be efficient.
+The test suite actually given in the repository and the interactive tool at the
+end of this page use the pre-computed frequencies database in order to be
+efficient.
 
 ### Bonus: Interactive Caesar cipher toolkit
 
-Enter some plaintext or ciphertext.
-
-You can encrypt, decrypt or attempt to crack it with frequency analysis.
+Here you can try all the algorithms described above interactively. Just enter
+some plaintext or ciphertext and choose an operation to perform.
 
 Of course, the specified key is ignored when cracking.
 
@@ -700,16 +744,18 @@ Of course, the specified key is ignored when cracking.
 
 <div id="caesar-controls">
     <div>
+        <button type="button" onclick="window.caesar.events.onAnalyse()">Analyse</button>
         <button type="button" onclick="window.caesar.events.onEncrypt()">Encrypt</button>
         <button type="button" onclick="window.caesar.events.onDecrypt()">Decrypt</button>
         <button type="button" onclick="window.caesar.events.onCrack()">Crack</button>
+        <button type="button" onclick="window.caesar.events.onDetectLanguage()">Detect Language</button>
         <button type="button" onclick="window.caesar.events.onReset()">Reset</button>
     </div>
     <div>
         <small>Language: </small>
         <span id="caesar-language">Unknown</span>
         <span class="caesar-separator"> - </span>
-        <span>Key: </span>
+        <small>Key: </small>
         <input id="caesar-key" type="number" value="13" />
     </div>
 </div>
