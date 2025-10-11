@@ -762,6 +762,11 @@ Of course, the specified key is ignored when cracking.
 
 <textarea readonly id="caesar-result" rows="8"></textarea>
 
+<div>
+    <small>Frequency analysis distance: </small>
+    <span id="caesar-distance"></span>
+</div>
+
 ## Conclusions
 
 In this article we performed some basic distribution computations on a randomly
@@ -795,7 +800,6 @@ statistics.
 
 
 <script type="importmap">
-    { "imports": { "lib": "https://cdn.jsdelivr.net/gh/jcondor98/statistics@master/homework-02/frequency-analysis/lib.js" } }
+    { "imports": { "lib": "https://cdn.jsdelivr.net/gh/jcondor98/statistics@master/homeworks/homework-02/frequency-analysis/lib.js" } }
 </script>
 <script type="module" src="/assets/js/homework-02.js"></script>
-<script type="module" src="https://cdn.jsdelivr.net/gh/jcondor98/statistics@master/homeworks/homework-02/frequency-analysis/lib.js"></script>
