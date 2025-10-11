@@ -20,8 +20,8 @@ All the work related to this homework can be found in the
 [repository](https://github.com/jcondor98/statistics), in the
 `homeworks/homework-02/` directory.
 
-For the frequency analysis part, the implementations done can be tested
-directly at the end of this page with an interactive tool.
+For the frequency analysis part, all the implementations can be tested directly
+at the end of this page with an interactive tool.
 
 ## Distribution
 
@@ -48,12 +48,12 @@ in this context.
 The `sqlite3` database is used to load the dataset and perform any operation on
 it. Though the queries should work with any SQL database, the `run.sh` script
 will use a `sqlite3` file database. Using `sqlite3` eliminates the need of a
-DMBS server.
+DMBS server, making local testing a pleasant process.
 
 ### About the dataset
 
-The population units are represented by students. Each student has the
-following attributes:
+The population units are represented by university students. Each student has
+the following attributes:
 
 Attribute       | Type    | Description
 ----------------|---------|----------------------------------------------------
@@ -151,7 +151,7 @@ avg_score,frequency
 29,0.09
 ```
 
-#### Univariate distribution on `avg_score`
+#### Univariate distribution on `academic_year`
 
 As we already computed the univariate distribution on `fuori_sede`, doing it
 for `academic_year` is straightforward:
@@ -247,6 +247,9 @@ implements algorithms in JavaScript to:
 * encrypt and decrypt a string with the Caesar cipher (using an arbitrary key)
 * break the Caesar cipher using frequency analysis on an arbitrary ciphertext
 
+For this part, an interactive tool can be found at the end of this page. It can
+be used to play with all the algorithms that are going to be implemented below.
+
 ### Metodology and resources
 
 All the related work can be found in the
@@ -259,9 +262,16 @@ that outputs random text. This utility avoids using special characters even if
 they should be used in the chosen language, making the computed frequencies
 consistent when breaking the cipher and automatically guessing the language.
 
-The sample text present in the repository used for testing is taken from [Night
-Train to Lisbon](https://en.wikipedia.org/wiki/Night_Train_to_Lisbon) by Pascal
-Mercier, one of my favourite novels.
+The sample texts present in the repository used for testing are chosen as follows:
+
+* the English sample is taken from [Night Train to
+  Lisbon](https://en.wikipedia.org/wiki/Night_Train_to_Lisbon) by Pascal Mercier,
+  one of my favourite novels
+* the Italian sample is taken from [Il fu Mattia
+  Pascal](https://it.wikipedia.org/wiki/Il_fu_Mattia_Pascal)
+* the German sample is taken from [Critique of Pure Reason (Kritik der reinen
+  Vernunft)](https://en.wikipedia.org/wiki/Critique_of_Pure_Reason) from
+  Immanuel Kant
 
 The [Cryptii Caesar cipher utility](https://cryptii.com/pipes/caesar-cipher)
 has been used to perform the first tests of the Caesar cipher implementation.
@@ -271,12 +281,13 @@ repository requires `nodejs` to be installed. No third-party libraries are
 required.
 
 Keep in mind that a pre-generated frequencies database is present in the
-repository, along with its training data.
+repository, along with its training data. Also the interactive tool at the end
+of this page uses such database, taking it directly from the repository.
 
 ### Simple frequency analysis
 
 Frequency analysis for a text string consists in computing the frequency with
-which each letters appears. For example, we expect vocals to be more frequent
+which each letter appears. For example, we expect vowels to be more frequent
 than consonants in most of the languages. Different spoken languages shall have
 different letters distributions.
 
@@ -383,7 +394,7 @@ Mathematical centre:
 ```
 
 We can observe that the frequencies are similar. In particular, it can be
-observed that vocals have a much higher frequencies, and unusual letters such
+observed that vowels have a much higher frequencies, and unusual letters such
 as `j` and `z` have lower values.
 
 #### Bonus: Automatic language detection
@@ -443,7 +454,7 @@ Britannica](https://www.britannica.com/topic/Caesar-cipher):
 
 The cipher can be implementated as follows:
 
-* assign a numerical position to each letter (e.g. `a` is `0`, `c` is `3`, ...)
+* assign a numerical position to each letter (e.g. `a` is `0`, `c` is `2`, ...)
 * choose a numerical _key_ `k` (between `0` and `25` for the English alphabet)
 * to _encrypt_ shift each letter forward by `k` places (consider that letters
   may overflow, so technically letters must be _rotated_ and not shifted)
@@ -725,7 +736,7 @@ if (import.meta.main) {
 }
 ```
 
-The complete code can be found in the [`build-frequencies-db`
+The complete code can be found in the [`build-frequencies-db.js`
 file](https://github.com/jcondor98/statistics/blob/master/homework-02/frequency-analysis/build-frequencies-db.js)
 of the repository.
 
@@ -797,7 +808,6 @@ statistics.
         margin: 0 0.4em;
     }
 </style>
-
 
 <script type="importmap">
     { "imports": { "lib": "https://cdn.jsdelivr.net/gh/jcondor98/statistics@master/homeworks/homework-02/frequency-analysis/lib.js" } }
