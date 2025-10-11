@@ -17,6 +17,7 @@ export async function buildFrequenciesDb(output = DEFAULT_OUTPUT, trainingDir = 
 
   console.log(`Writing frequencies database to '${output}'`);
   await fs.writeFile(output, JSON.stringify(frequencies));
+  console.groupEnd();
 }
 
 if (import.meta.main) {

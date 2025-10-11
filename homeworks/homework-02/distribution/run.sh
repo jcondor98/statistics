@@ -32,8 +32,9 @@ echo "[*] Populating database"
 sqlite3 "$DB_FILE" < $DATASET_FILE
 
 for QUERY_FILE in $(ls queries); do
-  echo "[*] Executing query: $(basename -s .sql $QUERY_FILE)"
-  sqlite3 -header -csv "$DB_FILE" < queries/$QUERY_FILE > output/$QUERY_FILE.csv
+  QUERY=$(basename -s .sql $QUERY_FILE)
+  echo "[*] Executing query: $QUERY"
+  sqlite3 -header -csv "$DB_FILE" < queries/$QUERY_FILE > output/$QUERY.csv
 done
 
 echo "[*] Done. Output can be found in the output/ directory"
