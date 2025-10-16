@@ -1,7 +1,7 @@
 import { computeFrequencies, encrypt, decrypt, crack, detectLanguage } from "lib";
 
 let frequencies;
-fetch("https://cdn.jsdelivr.net/gh/jcondor98/statistics@master/homework-02/frequency-analysis/frequencies.json")
+fetch("https://cdn.jsdelivr.net/gh/jcondor98/statistics@master/homeworks/homework-02/frequency-analysis/frequencies.json")
   .then(res => res.json())
   .then(f => {
     frequencies = f
