@@ -14,13 +14,14 @@ const frequencies = FrequencyAnalysis.manyByLanguage(
 
 let results = []
 
-//results.push(await testDistanceFrom())
-//results.push(await testDetectLanguage())
-//results.push(testEncrypt())
-//results.push(testDecrypt())
-//results.push(await testCrack())
-//results.push(await testCrack("./samples/italian-short.txt"))
-results.push(testLetterwiseRsa())
+results.push(await testDistanceFrom())
+results.push(await testDetectLanguage())
+results.push(testEncrypt())
+results.push(testDecrypt())
+results.push(await testCrack())
+results.push(await testCrack("./samples/italian-short.txt"))
+results.push(testLetterwiseRsa(LetterwiseRSA.random()))
+results.push(testLetterwiseRsa(LetterwiseRSA.fromPrimes(29, 31)))
 results.push(testEgcd())
 results.push(testModInv())
 results.push(testModPow())
@@ -115,29 +116,6 @@ function testDecrypt() {
   return passed
 }
 
-function testLetterwiseRsa() {
-  console.group("Testing LetterwiseRSA with random primes")
-  const cipher = LetterwiseRSA.random();
-  console.log('Created random LetterwiseRSA with context: ', cipher.context);
-
-  const original = "The quick brown fox jumps over the lazy dog."
-  const ciphertext = cipher.encrypt(original)
-  const plaintext = cipher.decrypt(ciphertext)
-
-  console.log(`Original plaintext is: ${original}`)
-  console.log(`Computed ciphertext is: ${ciphertext}`)
-  console.log(`Computed plaintext is: ${plaintext}`)
-
-  const passed = original === plaintext && original !== ciphertext
-  if (passed)
-    console.log("Cipher seems to be correct")
-  else
-    console.warn("Cipher operations do not return the expected results")
-
-  console.groupEnd()
-  return passed
-}
-
 async function testCrack(textFile = TEXT_FILE) {
   console.group("Testing crack() with key 7")
   const expected = await fs.readFile(textFile, 'utf8')
@@ -158,6 +136,27 @@ async function testCrack(textFile = TEXT_FILE) {
     console.log("Plaintext is correct")
   else
     console.warn("Plaintext does not match the expected result")
+
+  console.groupEnd()
+  return passed
+}
+
+function testLetterwiseRsa(cipher) {
+  console.group("Testing LetterwiseRSA with cipher context:", cipher.context)
+
+  const original = "The quick brown fox jumps over the lazy dog."
+  const ciphertext = cipher.encrypt(original)
+  const plaintext = cipher.decrypt(ciphertext)
+
+  console.log(`Original plaintext is: ${original}`)
+  console.log(`Computed ciphertext is: ${ciphertext}`)
+  console.log(`Computed plaintext is: ${plaintext}`)
+
+  const passed = original === plaintext && original !== ciphertext
+  if (passed)
+    console.log("Cipher seems to be correct")
+  else
+    console.warn("Cipher operations do not return the expected results")
 
   console.groupEnd()
   return passed

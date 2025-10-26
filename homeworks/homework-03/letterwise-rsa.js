@@ -1,7 +1,8 @@
-import { Cipher, LOWER_A_CODE, LOWER_Z_CODE, UPPER_A_CODE, UPPER_Z_CODE } from "./lib.js";
+import { Cipher } from "./lib.js";
 
 /** Fixed set of small primes, such that n < 26 (alphabet length) */
-const PRIMES = [2, 3, 5, 7, 11, 13];
+//const PRIMES = [2, 3, 5, 7, 11, 13] // Small primes do not work when using the full ASCII table
+const PRIMES = [29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127]
 
 /**
  * Compute the Greatest Common Divisor using the Euclid's algorithm
@@ -95,49 +96,19 @@ export class LetterwiseRSA extends Cipher {
   }
 
   encrypt(plaintext) {
-    const { e, n } = this.key.public;
-
-    return [...plaintext].map(c => {
-      const code = c.charCodeAt(0)
-      let lowerCase
-
-      if (code >= LOWER_A_CODE && code <= LOWER_Z_CODE)
-        lowerCase = true
-      else if (code >= UPPER_A_CODE && code <= UPPER_Z_CODE)
-        lowerCase = false
-      else return c // Non-alphabetic character
-
-      const aCode = lowerCase ? LOWER_A_CODE : UPPER_A_CODE
-
-      // Index of the character in the alphabet
-      const i = code - aCode;
-
-      const enc = modPow(i, e, n);
-      return String.fromCharCode(enc + aCode)
-    }).join('');
+    const { e, n } = this.key.public
+    const encrypted = [...plaintext]
+      .map(c => c.charCodeAt(0))
+      .map(c => modPow(c, e, n))
+    return JSON.stringify(encrypted)
   }
 
   decrypt(ciphertext) {
-    const { d, n } = this.key.private;
-
-    return [...ciphertext].map(c => {
-      const code = c.charCodeAt(0)
-      let lowerCase
-
-      if (code >= LOWER_A_CODE && code <= LOWER_Z_CODE)
-        lowerCase = true
-      else if (code >= UPPER_A_CODE && code <= UPPER_Z_CODE)
-        lowerCase = false
-      else return c // Non-alphabetic character
-
-      const aCode = lowerCase ? LOWER_A_CODE : UPPER_A_CODE
-
-      // Index of the character in the alphabet
-      const i = code - aCode;
-
-      const dec = modPow(i, d, n);
-      return String.fromCharCode(dec + aCode)
-    }).join('');
+    const { d, n } = this.key.private
+    return JSON.parse(ciphertext)
+      .map(x => modPow(x, d, n))
+      .map(c => String.fromCharCode(c))
+      .join('')
   }
 
   static *all() {

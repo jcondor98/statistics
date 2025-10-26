@@ -16,6 +16,17 @@ function* range(start, stop, step = 1) {
     yield i;
 }
 
+/**
+ * Test if a character is alphabetic
+ * @param {string} c the character to test
+ * @returns {boolean} true if `c` is alphabetic, false otherwise
+ */
+export function isAlphabetic(c) {
+  const code = c.charCodeAt(0);
+  return code >= LOWER_A_CODE && code <= LOWER_Z_CODE ||
+    code >= UPPER_A_CODE && code <= UPPER_Z_CODE
+}
+
 /** A letter-wise frequency analysis */
 export class FrequencyAnalysis {
   constructor(data) {
