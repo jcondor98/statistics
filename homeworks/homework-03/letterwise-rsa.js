@@ -1,4 +1,4 @@
-import { Cipher } from "./lib.js";
+import { Cipher, range } from "./lib.js";
 
 /** Fixed set of small primes, such that n < 26 (alphabet length) */
 //const PRIMES = [2, 3, 5, 7, 11, 13] // Small primes do not work when using the full ASCII table

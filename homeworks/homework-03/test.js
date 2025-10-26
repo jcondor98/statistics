@@ -6,6 +6,9 @@ import { LetterwiseRSA, egcd, modInv, modPow } from "./letterwise-rsa.js"
 const TEXT_FILE = "./samples/english.txt"
 const FREQUENCIES_DB_FILE = "./frequencies.json"
 
+if (!process.env.DEBUG)
+  console.debug = () => { }
+
 console.log("Statistics - Test suite for Homework 2")
 
 await initFrequenciesDb()
@@ -20,11 +23,12 @@ results.push(testEncrypt())
 results.push(testDecrypt())
 results.push(await testCrack())
 results.push(await testCrack("./samples/italian-short.txt"))
-results.push(testLetterwiseRsa(LetterwiseRSA.random()))
-results.push(testLetterwiseRsa(LetterwiseRSA.fromPrimes(29, 31)))
 results.push(testEgcd())
 results.push(testModInv())
 results.push(testModPow())
+
+for (const cipher of LetterwiseRSA.all())
+  results.push(testLetterwiseRsa(cipher))
 
 const passed = results.filter(x => x).length
 const failed = results.filter(x => !x).length
@@ -44,9 +48,9 @@ async function testDistanceFrom(textFile = TEXT_FILE) {
     .reduce((x, total) => total + x, 0)
 
   if (total === 1)
-    console.log("The sum of all frequencies 1 (correct)")
+    console.debug("The sum of all frequencies 1 (correct)")
   else if (total >= 0.99 && total <= 1.01)
-    console.log(`The sum of all frequencies is ${total} (close enough to 1)`)
+    console.debug(`The sum of all frequencies is ${total} (close enough to 1)`)
   else
     console.debug(`The sum of all frequencies is ${total} (should be 1)`)
 
@@ -60,8 +64,8 @@ async function testDetectLanguage() {
     const { language } = FrequencyAnalysis.of(text).detectLanguage(frequencies)
 
     if (language === expected)
-      console.log(`Correct language ${language} detected for ${textFile}`)
-    else console.log(`Incorrect language ${language} detected for ${textFile} (expected ${expected})`)
+      console.debug(`Correct language ${language} detected for ${textFile}`)
+    else console.debug(`Incorrect language ${language} detected for ${textFile} (expected ${expected})`)
 
     return language === expected
   }
@@ -82,13 +86,13 @@ function testEncrypt() {
   const expected = "Gur dhvpx oebja sbk whzcf bire gur ynml qbt."
   const ciphertext = new CaesarCipher({ key: 13 }).encrypt(plaintext)
 
-  console.log(`Plaintext is: ${plaintext}`)
-  console.log(`Computed ciphertext is: ${ciphertext}`)
-  console.log(`Expected ciphertext is: ${expected}`)
+  console.debug(`Plaintext is: ${plaintext}`)
+  console.debug(`Computed ciphertext is: ${ciphertext}`)
+  console.debug(`Expected ciphertext is: ${expected}`)
 
   const passed = ciphertext === expected
   if (passed)
-    console.log("Ciphertext is correct")
+    console.debug("Ciphertext is correct")
   else
     console.warn("Ciphertext does not match the expected result")
 
@@ -102,13 +106,13 @@ function testDecrypt() {
   const expected = "The quick brown fox jumps over the lazy dog."
   const plaintext = new CaesarCipher({ key: 13 }).decrypt(ciphertext)
 
-  console.log(`Ciphertext is: ${ciphertext}`)
-  console.log(`Computed plaintext is: ${plaintext}`)
-  console.log(`Expected plaintext is: ${expected}`)
+  console.debug(`Ciphertext is: ${ciphertext}`)
+  console.debug(`Computed plaintext is: ${plaintext}`)
+  console.debug(`Expected plaintext is: ${expected}`)
 
   const passed = plaintext === expected
   if (passed)
-    console.log("Plaintext is correct")
+    console.debug("Plaintext is correct")
   else
     console.warn("Plaintext does not match the expected result")
 
@@ -125,15 +129,15 @@ async function testCrack(textFile = TEXT_FILE) {
   const { cipher, distance, language } = cracker.crack(ciphertext, frequencies)
   const plaintext = cipher.decrypt(ciphertext)
 
-  console.log(`Ciphertext is: ${ciphertext}`)
-  console.log(`Computed plaintext is: ${plaintext}`)
-  console.log(`Expected plaintext is: ${expected}`)
-  console.log(`Cracked as ${language} with distance ${distance}`)
-  console.log("Context of the guessed cipher:", cipher.context)
+  console.debug(`Ciphertext is: ${ciphertext}`)
+  console.debug(`Computed plaintext is: ${plaintext}`)
+  console.debug(`Expected plaintext is: ${expected}`)
+  console.debug(`Cracked as ${language} with distance ${distance}`)
+  console.debug("Context of the guessed cipher:", cipher.context)
 
   const passed = plaintext === expected
   if (passed)
-    console.log("Plaintext is correct")
+    console.debug("Plaintext is correct")
   else
     console.warn("Plaintext does not match the expected result")
 
@@ -142,19 +146,19 @@ async function testCrack(textFile = TEXT_FILE) {
 }
 
 function testLetterwiseRsa(cipher) {
-  console.group("Testing LetterwiseRSA with cipher context:", cipher.context)
+  console.group(`Testing LetterwiseRSA with p=${cipher.context.p}, q=${cipher.context.q}`)
 
   const original = "The quick brown fox jumps over the lazy dog."
   const ciphertext = cipher.encrypt(original)
   const plaintext = cipher.decrypt(ciphertext)
 
-  console.log(`Original plaintext is: ${original}`)
-  console.log(`Computed ciphertext is: ${ciphertext}`)
-  console.log(`Computed plaintext is: ${plaintext}`)
+  console.debug(`Original plaintext is: ${original}`)
+  console.debug(`Computed ciphertext is: ${ciphertext}`)
+  console.debug(`Computed plaintext is: ${plaintext}`)
 
   const passed = original === plaintext && original !== ciphertext
   if (passed)
-    console.log("Cipher seems to be correct")
+    console.debug("Cipher seems to be correct")
   else
     console.warn("Cipher operations do not return the expected results")
 

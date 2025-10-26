@@ -11,7 +11,7 @@ export const FREQ_MAX_GUESS_DISTANCE = 26;
  * @param {number} step the step of the range
  * @returns an iterator over the desired range
  */
-function* range(start, stop, step = 1) {
+export function* range(start, stop, step = 1) {
   for (let i = start; i < stop; i += step)
     yield i;
 }
