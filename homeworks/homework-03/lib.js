@@ -1,9 +1,9 @@
-const LOWER_A_CODE = 'a'.charCodeAt(0);
-const LOWER_Z_CODE = 'z'.charCodeAt(0);
-const UPPER_A_CODE = 'A'.charCodeAt(0);
-const UPPER_Z_CODE = 'Z'.charCodeAt(0);
+export const LOWER_A_CODE = 'a'.charCodeAt(0);
+export const LOWER_Z_CODE = 'z'.charCodeAt(0);
+export const UPPER_A_CODE = 'A'.charCodeAt(0);
+export const UPPER_Z_CODE = 'Z'.charCodeAt(0);
 
-const FREQ_MAX_GUESS_DISTANCE = 26;
+export const FREQ_MAX_GUESS_DISTANCE = 26;
 
 /**
  * @param {number} start the start value of the range, inclusive
@@ -167,27 +167,25 @@ export class CaesarCipher extends Cipher {
 
   encrypt(plaintext) {
     return [...plaintext].map(c => {
-      const key = this.context.key;
       let code = c.charCodeAt(0);
 
       if (code >= LOWER_A_CODE && code <= LOWER_Z_CODE)
-        code = LOWER_A_CODE + (code - LOWER_A_CODE + key) % 26;
+        code = LOWER_A_CODE + (code - LOWER_A_CODE + this.key) % 26;
       else if (code >= UPPER_A_CODE && code <= UPPER_Z_CODE)
-        code = UPPER_A_CODE + (code - UPPER_A_CODE + key) % 26;
+        code = UPPER_A_CODE + (code - UPPER_A_CODE + this.key) % 26;
 
       return String.fromCharCode(code);
     }).join('');
   }
 
   decrypt(ciphertext) {
-    const key = this.context.key;
     return [...ciphertext].map(c => {
       let code = c.charCodeAt(0);
 
       if (code >= LOWER_A_CODE && code <= LOWER_Z_CODE)
-        code = LOWER_A_CODE + (code - LOWER_A_CODE + 26 - key) % 26;
+        code = LOWER_A_CODE + (code - LOWER_A_CODE + 26 - this.key) % 26;
       else if (code >= UPPER_A_CODE && code <= UPPER_Z_CODE)
-        code = UPPER_A_CODE + (code - UPPER_A_CODE + 26 - key) % 26;
+        code = UPPER_A_CODE + (code - UPPER_A_CODE + 26 - this.key) % 26;
 
       return String.fromCharCode(code);
     }).join('');
