@@ -1,4 +1,4 @@
-import { Cipher, range } from "./lib.js";
+import { Cipher, range } from "../lib.js";
 
 /** Fixed set of small primes, such that n < 26 (alphabet length) */
 //const PRIMES = [2, 3, 5, 7, 11, 13] // Small primes do not work when using the full ASCII table
@@ -44,12 +44,10 @@ export function modPow(base, exp, m) {
 
 /** An insecure letter-wise implementation of the RSA algorithm */
 export class LetterwiseRSA extends Cipher {
+  static name = 'letterwise-rsa'
+
   constructor(context) {
     super(context)
-  }
-
-  static get name() {
-    return 'letterwise-rsa'
   }
 
   /**

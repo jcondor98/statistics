@@ -1,7 +1,8 @@
-import { FrequencyAnalysis, CaesarCipher, Cracker } from "./lib.js"
-import { buildFrequenciesDb } from './build-frequencies-db.js'
 import fs from "node:fs/promises"
-import { LetterwiseRSA, egcd, modInv, modPow } from "./letterwise-rsa.js"
+import { CaesarCipher } from "./ciphers/caesar.js"
+import { FrequencyAnalysis, Cracker } from "./lib.js"
+import { LetterwiseRSA, egcd, modInv, modPow } from "./ciphers/letterwise-rsa.js"
+import { buildFrequenciesDb } from './build-frequencies-db.js'
 
 const TEXT_FILE = "./samples/english.txt"
 const FREQUENCIES_DB_FILE = "./frequencies.json"
@@ -21,9 +22,6 @@ results.push(await testDistanceFrom())
 results.push(await testDetectLanguage())
 results.push(testCaesarEncrypt())
 results.push(testCaesarDecrypt())
-results.push(await testCrack(CaesarCipher.rot(7)))
-results.push(await testCrack(CaesarCipher.rot(7), "./samples/italian-short.txt"))
-results.push(await testCrack(LetterwiseRSA.random()))
 results.push(testEgcd())
 results.push(testModInv())
 results.push(testModPow())
@@ -33,6 +31,10 @@ for (const cipher of CaesarCipher.all())
 
 for (const cipher of LetterwiseRSA.all())
   results.push(testCipherCorrectness(cipher))
+
+results.push(await testCrack(CaesarCipher.rot(7)))
+results.push(await testCrack(CaesarCipher.rot(7), "./samples/italian-short.txt"))
+results.push(await testCrack(LetterwiseRSA.random()))
 
 const passed = results.filter(x => x).length
 const failed = results.filter(x => !x).length
@@ -130,32 +132,6 @@ function testCaesarDecrypt() {
   return passed
 }
 
-async function testCrack(cipher, textFile = TEXT_FILE) {
-  console.group(`Testing crack() with cipher ${cipher.constructor.name} - ${JSON.stringify(cipher.context)}`)
-  const expected = await fs.readFile(textFile, 'utf8')
-  const ciphertext = cipher.encrypt(expected)
-
-  const cracker = new Cracker({ cipher, frequencies })
-  const { cipher: guessedCipher, distance, language } =
-    cracker.crack(ciphertext, frequencies)
-  const plaintext = guessedCipher.decrypt(ciphertext)
-
-  console.debug(`Ciphertext is: ${ciphertext}`)
-  console.debug(`Computed plaintext is: ${plaintext}`)
-  console.debug(`Expected plaintext is: ${expected}`)
-  console.debug(`Cracked as ${language} with distance ${distance}`)
-  console.debug("Context of the guessed cipher:", guessedCipher.context)
-
-  const passed = plaintext === expected
-  if (passed)
-    console.debug("Plaintext is correct")
-  else
-    console.warn("Plaintext does not match the expected result")
-
-  console.groupEnd()
-  return passed
-}
-
 function testCipherCorrectness(cipher) {
   if (cipher instanceof LetterwiseRSA)
     console.group(`Testing correctness of LetterwiseRSA with p=${cipher.context.p}, q=${cipher.context.q}`)
@@ -178,6 +154,31 @@ function testCipherCorrectness(cipher) {
     console.debug("Cipher seems to be correct")
   else
     console.warn("Cipher operations do not return the expected results")
+
+  console.groupEnd()
+  return passed
+}
+
+async function testCrack(cipher, textFile = TEXT_FILE) {
+  console.group(`Testing crack() with cipher ${cipher.constructor.name} - ${JSON.stringify(cipher.context)}`)
+  const expected = await fs.readFile(textFile, 'utf8')
+  const ciphertext = cipher.encrypt(expected)
+
+  const cracker = new Cracker({ cipher, frequencies })
+  const { cipher: guessedCipher, distance, language } = cracker.crack(ciphertext)
+  const plaintext = guessedCipher.decrypt(ciphertext)
+
+  console.debug(`Ciphertext is: ${ciphertext}`)
+  console.debug(`Computed plaintext is: ${plaintext}`)
+  console.debug(`Expected plaintext is: ${expected}`)
+  console.debug(`Cracked as ${language} with distance ${distance}`)
+  console.debug("Context of the guessed cipher:", guessedCipher.context)
+
+  const passed = plaintext === expected
+  if (passed)
+    console.debug("Plaintext is correct")
+  else
+    console.warn("Plaintext does not match the expected result")
 
   console.groupEnd()
   return passed
