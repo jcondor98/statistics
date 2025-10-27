@@ -1,4 +1,4 @@
-import { Cipher, range, LOWER_A_CODE, LOWER_Z_CODE, UPPER_A_CODE, UPPER_Z_CODE } from "../lib.js";
+import { Cipher, range, LOWER_A_CODE, LOWER_Z_CODE, UPPER_A_CODE, UPPER_Z_CODE } from "../index.js";
 
 /** The Caesar cipher */
 export class CaesarCipher extends Cipher {
@@ -47,5 +47,8 @@ export class CaesarCipher extends Cipher {
     for (const i of range(0, 26))
       yield new CaesarCipher({ key: i })
   }
-}
 
+  toString() {
+    return `CaesarCipher(${this.key})`
+  }
+}

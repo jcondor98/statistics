@@ -1,4 +1,4 @@
-import { FrequencyAnalysis } from "./lib.js";
+import { FrequencyAnalysis } from "./src/index.js";
 import fs from "node:fs/promises"
 
 const DEFAULT_OUTPUT = './frequencies.json';
@@ -8,11 +8,12 @@ export async function buildFrequenciesDb(output = DEFAULT_OUTPUT, trainingDir = 
   console.group("Building letters frequencies database");
   const frequencies = {};
 
-  for (const file of await fs.readdir('./training/')) {
+  for (const file of await fs.readdir(trainingDir)) {
     const language = file.replace(/\.txt$/, '');
     console.log(`Processing training text for language '${language}'`);
     const text = await fs.readFile(`${trainingDir}/${language}.txt`);
-    frequencies[language] = FrequencyAnalysis.of(text);
+    const analysis = FrequencyAnalysis.of(text.toString())
+    frequencies[language] = Object.fromEntries(analysis.entries())
   }
 
   console.log(`Writing frequencies database to '${output}'`);

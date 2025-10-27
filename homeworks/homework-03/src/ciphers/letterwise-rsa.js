@@ -1,4 +1,4 @@
-import { Cipher, range } from "../lib.js";
+import { Cipher, range } from "../index.js";
 
 /** Fixed set of small primes, such that n < 26 (alphabet length) */
 //const PRIMES = [2, 3, 5, 7, 11, 13] // Small primes do not work when using the full ASCII table
@@ -131,5 +131,9 @@ export class LetterwiseRSA extends Cipher {
     for (const i of range(0, PRIMES.length))
       for (const j of range(i + 1, PRIMES.length))
         yield LetterwiseRSA.fromPrimes(PRIMES[i], PRIMES[j])
+  }
+
+  toString() {
+    return `LetterwiseRSA(p=${this.context.p}, q=${this.context.q})`
   }
 }

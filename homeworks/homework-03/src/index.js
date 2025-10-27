@@ -1,3 +1,6 @@
+export * from './ciphers/caesar.js'
+export * from './ciphers/letterwise-rsa.js'
+
 export const LOWER_A_CODE = 'a'.charCodeAt(0);
 export const LOWER_Z_CODE = 'z'.charCodeAt(0);
 export const UPPER_A_CODE = 'A'.charCodeAt(0);
@@ -134,14 +137,13 @@ export class FrequencyAnalysis extends Map {
   * @returns {object} a guess result containing the language and the frequency analysis distance
   */
   detectLanguage(frequencies) {
-    const textFrequencies = FrequencyAnalysis.of(text);
     let guess = {
       language: null,
       distance: FREQ_MAX_GUESS_DISTANCE
     };
 
     for (const language in frequencies) {
-      const distance = textFrequencies.distance(frequencies[language]);
+      const distance = this.distanceFrom(frequencies[language]);
       if (distance < guess.distance)
         guess = { language, distance };
     }
@@ -217,6 +219,10 @@ export class Cipher {
   /** @returns all possible ciphers (i.e. a cipher for each possible key) */
   static *all() {
     throw new Error('all() is not implemented for this Cipher')
+  }
+
+  toString() {
+    return 'Cipher'
   }
 }
 

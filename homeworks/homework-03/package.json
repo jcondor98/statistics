@@ -1,0 +1,25 @@
+{
+  "name": "statistics-crypto",
+  "version": "1.0.0",
+  "description": "Frequency analysis and cipher breaker implementations for Homework 03 (Statistics)",
+  "homepage": "https://github.com/jcondor98/statistics#readme",
+  "bugs": {
+    "url": "https://github.com/jcondor98/statistics/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jcondor98/statistics.git"
+  },
+  "license": "UNLICENSED",
+  "author": "jcondor",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js",
+    "build": "esbuild src/index.js --bundle --format=esm --minify --outdir=dist"
+  },
+  "devDependencies": {
+    "ava": "^6.4.1",
+    "esbuild": "^0.25.11"
+  }
+}
