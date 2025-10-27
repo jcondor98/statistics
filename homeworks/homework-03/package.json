@@ -16,7 +16,8 @@
   "main": "index.js",
   "scripts": {
     "test": "node test.js",
-    "build": "esbuild src/index.js --bundle --format=esm --minify --outdir=dist"
+    "build": "esbuild src/index.js --bundle --format=esm --minify --outfile=dist/homework-03.js",
+    "clean": "rm -v dist/*"
   },
   "devDependencies": {
     "ava": "^6.4.1",

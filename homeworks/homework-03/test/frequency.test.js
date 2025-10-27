@@ -1,6 +1,6 @@
 import fs from "node:fs/promises"
 import test from 'ava'
-import { FrequencyAnalysis } from '../src/index.js'
+import { FrequencyAnalysis } from '../src/frequency.js'
 import { initFrequenciesDb } from './helpers/common.js'
 
 const TEXT_FILE = "./samples/english.txt"

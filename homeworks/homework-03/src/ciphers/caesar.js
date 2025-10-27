@@ -1,4 +1,5 @@
-import { Cipher, range, LOWER_A_CODE, LOWER_Z_CODE, UPPER_A_CODE, UPPER_Z_CODE } from "../index.js";
+import { range, LOWER_A_CODE, LOWER_Z_CODE, UPPER_A_CODE, UPPER_Z_CODE } from "../util.js";
+import { Cipher } from "../crypto.js";
 
 /** The Caesar cipher */
 export class CaesarCipher extends Cipher {

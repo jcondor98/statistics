@@ -1,6 +1,6 @@
 import fs from "node:fs/promises"
 import { buildFrequenciesDb } from '../../build-frequencies-db.js'
-import { FrequencyAnalysis } from "../../src/index.js"
+import { FrequencyAnalysis } from "../../src/frequency.js"
 
 const FREQUENCIES_DB_FILE = './frequencies.json'
 let frequencies

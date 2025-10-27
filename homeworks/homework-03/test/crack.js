@@ -1,7 +1,7 @@
 import fs from "node:fs/promises"
 import test from 'ava'
 import { CaesarCipher } from "../src/ciphers/caesar.js"
-import { Cracker } from "../src/index.js"
+import { Cracker } from "../src/crypto.js"
 import { LetterwiseRSA } from "../src/ciphers/letterwise-rsa.js"
 import { initFrequenciesDb } from './helpers/common.js'
 

@@ -1,4 +1,4 @@
-import { FrequencyAnalysis } from "./src/index.js";
+import { FrequencyAnalysis } from "./src/frequency.js";
 import fs from "node:fs/promises"
 
 const DEFAULT_OUTPUT = './frequencies.json';
