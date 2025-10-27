@@ -48,6 +48,10 @@ export class LetterwiseRSA extends Cipher {
     super(context)
   }
 
+  static get name() {
+    return 'letterwise-rsa'
+  }
+
   /**
    * Construct an RSA cipher from two primes p and q
    * @param {number} p the first prime
@@ -103,9 +107,23 @@ export class LetterwiseRSA extends Cipher {
     return JSON.stringify(encrypted)
   }
 
+  /**
+   * Adapt the ciphertext for decryption.
+   * Allows to call decrypt() with arguments of different types.
+   * @param {string|number|array} ciphertext the ciphertext
+   * @returns {array} the ciphertext adapted for decryption
+   */
+  static adaptCiphertext(ciphertext) {
+    if (typeof ciphertext === 'string')
+      return JSON.parse(ciphertext)
+    if (typeof ciphertext === 'number')
+      return [ciphertext]
+    return ciphertext
+  }
+
   decrypt(ciphertext) {
     const { d, n } = this.key.private
-    return JSON.parse(ciphertext)
+    return this.constructor.adaptCiphertext(ciphertext)
       .map(x => modPow(x, d, n))
       .map(c => String.fromCharCode(c))
       .join('')

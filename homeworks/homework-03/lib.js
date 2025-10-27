@@ -28,69 +28,105 @@ export function isAlphabetic(c) {
 }
 
 /** A letter-wise frequency analysis */
-export class FrequencyAnalysis {
-  constructor(data) {
-    this.data = data;
+export class FrequencyAnalysis extends Map {
+  defaultValue = 0
+
+  constructor(...args) {
+    super(...args)
   }
 
-  /** @returns an empty FrequencyAnalysis with all values set to 0 */
+  /**
+   * Get an item frequency.
+   * @param {any} key the item relative to the frequency to get
+   * @returns {number} the item's frequency
+   */
+  get(key) {
+    return super.get(key) || this.defaultValue
+  }
+
+  /**
+   * Set the default value for the frequency of an item
+   * @param {number} v the default value
+   */
+  setDefaultValue(v) {
+    defaultValue = v
+  }
+
+  /**
+   * Build an empty FrequencyAnalysis with all values set to default.
+   * Present for compatibility purposes.
+   * @returns an empty FrequencyAnalysis
+   */
   static empty() {
-    const data = {}
-    for (const i of range(0, 26))
-      data[String.fromCharCode(LOWER_A_CODE + i)] = 0
-    return new FrequencyAnalysis(data)
+    return new FrequencyAnalysis()
   }
 
   /**
    * Compute the letters frequencies of a string.
    * Ignores non-alphabetical characters.
    * @param {string} s the string on which to compute frequencies
-   * @returns {object} the computed frequencies for all the letters
+   * @returns {FrequencyAnalysis} the FrequencyAnalysis computed on `s`
    */
   static of(s) {
-    if (typeof s !== 'string')
-      s = s.toString()
-
-    const frequencies = FrequencyAnalysis.empty();
-    s = [...s.toLowerCase()].filter(c => c.match(/[a-z]/))
-
-    for (const c of s)
-      frequencies.data[c] += 1
-
-    for (const c in frequencies.data)
-      frequencies.data[c] /= s.length
-
-    return frequencies
+    return FrequencyAnalysis.raw(
+      [...s.toLowerCase()].filter(c => c.match(/[a-z]/)))
   }
 
   /**
-  * Compute the distance between two frequency analyses.
-  * If a cipher is specified, it will be used to shift f2 frequencies.
-  * @param {object} f1 the first frequency analysis
-  * @param {object} f2 the second frequency analysis
-  * @param {Cipher} cipher the reference cipher for f2, if any
-  */
+   * Compute the items frequencies of an iterable object.
+   * Does not ignore any item.
+   * @param {Iterable} s the iterable object on which to compute frequencies
+   * @returns {FrequencyAnalysis} the FrequencyAnalysis computed on `s`
+   */
+  static raw(s) {
+    const analysis = new FrequencyAnalysis()
+
+    for (const c of s)
+      analysis.set(c, analysis.get(c) + 1)
+
+    for (const [c, count] of analysis.entries())
+      analysis.set(c, count / s.length)
+
+    return analysis
+  }
+
+  /**
+   * Compute the distance from another frequency analysis.
+   * @param {other} f2 the second frequency analysis
+   * @returns {number} the distance from the specified frequency analysis
+   */
   distanceFrom(other) {
     let total = 0
-
-    for (const i of range(0, 26)) {
-      const c = String.fromCharCode('a'.charCodeAt(0) + i)
-      total += Math.abs(this.data[c] - other.data[c])
-    }
-
+    for (const [c, f] of this)
+      total += Math.abs(f - other.get(c))
     return total
   }
 
   /**
-   * Remap a FrequencyAnalysis to represent the frequency of letters in a ciphertext
-   * @param {Cipher} cipher the cipher to remap letters in the analysis
+   * Remap a ciphertext FrequencyAnalysis to represent the frequency of letters in a plaintext
+   * @param {Cipher} cipher the cipher to use to remap letters in the analysis
    * @returns a new, remapped FrequencyAnalysis
+   * @todo change name
    */
   remapped(cipher) {
-    const data = {}
-    for (const c in this.data)
-      data[cipher.encrypt(c)] = this.data[c]
-    return new FrequencyAnalysis(data)
+    const r = new FrequencyAnalysis()
+    for (const [c, f] of this)
+      r.set(cipher.decrypt(c), f)
+    return r
+  }
+
+  /**
+   * Convert this FrequencyAnalysis to consider just alphabetic characters, case-insensitive
+   * @returns {FrequencyAnalysis}
+   */
+  alphabetic() {
+    const analysis = new FrequencyAnalysis()
+    for (const i of range(0, 26)) {
+      const lower = String.fromCharCode(LOWER_A_CODE + i)
+      const upper = String.fromCharCode(UPPER_A_CODE + i)
+      analysis.set(lower, this.get(lower) + this.get(upper))
+    }
+    return analysis
   }
 
   /**
@@ -122,17 +158,13 @@ export class FrequencyAnalysis {
   static manyByLanguage(dataByLanguage) {
     const analyses = {}
     for (const l in dataByLanguage)
-      analyses[l] = new FrequencyAnalysis(dataByLanguage[l])
+      analyses[l] = new FrequencyAnalysis(Object.entries(dataByLanguage[l]))
     return analyses
   }
 }
 
 /** A generic cipher */
 export class Cipher {
-  get key() {
-    return this.context.key
-  }
-
   /**
    * Construct a cipher
    * @param {object} context the cipher context (will be passed to encrypt and decrypt)
@@ -142,6 +174,16 @@ export class Cipher {
    */
   constructor(context = {}) {
     this.context = context;
+  }
+
+  /** @returns {any} the key of the cipher instance */
+  get key() {
+    return this.context.key
+  }
+
+  /** @returns {string} the name of the cipher */
+  static get name() {
+    return 'generic'
   }
 
   /**
@@ -164,6 +206,17 @@ export class Cipher {
     throw new Error('decrypt() is not implemented for this Cipher')
   }
 
+  /**
+   * Adapt the ciphertext for decryption.
+   * Allows to call decrypt() with arguments of different types.
+   * May not be required for some ciphers.
+   * @param {string|number|array} ciphertext the ciphertext
+   * @returns {array} the ciphertext adapted for decryption
+   */
+  static adaptCiphertext(ciphertext) {
+    return ciphertext
+  }
+
   /** @returns all possible ciphers (i.e. a cipher for each possible key) */
   static *all() {
     throw new Error('all() is not implemented for this Cipher')
@@ -174,6 +227,19 @@ export class Cipher {
 export class CaesarCipher extends Cipher {
   constructor(context = { key: 0 }) {
     super(context);
+  }
+
+  static get name() {
+    return 'caesar'
+  }
+
+  /**
+   * Construct a ROT cipher with the given key
+   * @param key the key
+   * @returns the constructed CaesarCipher
+   */
+  static rot(key) {
+    return new CaesarCipher({ key })
   }
 
   encrypt(plaintext) {
@@ -208,10 +274,7 @@ export class CaesarCipher extends Cipher {
   }
 }
 
-/**
- * Ciphertext cracking algorithm for a generic letter-wise substitution cipher
- * @todo Improve passing the cipher
- */
+/** Ciphertext cracking algorithm for a generic letter-wise substitution cipher */
 export class Cracker {
   constructor({ cipher, frequencies, language }) {
     this.cipher = cipher;
@@ -224,13 +287,20 @@ export class Cracker {
    * @param {string} ciphertext the ciphertext string to crack
    */
   crack(ciphertext) {
-    const encFrequencies = FrequencyAnalysis.of(ciphertext)
+    const getAllCiphers =
+      this.cipher.constructor?.all || this.cipher.all;
+    const adaptCiphertext =
+      this.cipher.constructor?.adaptCiphertext || this.cipher.adaptCiphertext;
+
+    ciphertext = adaptCiphertext(ciphertext)
+
+    const encFrequencies = FrequencyAnalysis.raw(ciphertext)
     let guess = { distance: FREQ_MAX_GUESS_DISTANCE };
 
-    for (const cipher of this.cipher.all()) {
+    for (const cipher of getAllCiphers()) {
       for (const language in this.frequencies) {
-        const langFrequences = this.frequencies[language].remapped(cipher)
-        const distance = langFrequences.distanceFrom(encFrequencies)
+        const f1 = encFrequencies.remapped(cipher).alphabetic()
+        const distance = f1.distanceFrom(this.frequencies[language])
         if (distance < guess.distance)
           guess = { language, distance, cipher }
       }

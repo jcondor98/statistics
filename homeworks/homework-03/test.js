@@ -9,7 +9,7 @@ const FREQUENCIES_DB_FILE = "./frequencies.json"
 if (!process.env.DEBUG)
   console.debug = () => { }
 
-console.log("Statistics - Test suite for Homework 2")
+console.log("Statistics - Test suite for Homework 3")
 
 await initFrequenciesDb()
 const frequencies = FrequencyAnalysis.manyByLanguage(
@@ -19,16 +19,20 @@ let results = []
 
 results.push(await testDistanceFrom())
 results.push(await testDetectLanguage())
-results.push(testEncrypt())
-results.push(testDecrypt())
-results.push(await testCrack())
-results.push(await testCrack("./samples/italian-short.txt"))
+results.push(testCaesarEncrypt())
+results.push(testCaesarDecrypt())
+results.push(await testCrack(CaesarCipher.rot(7)))
+results.push(await testCrack(CaesarCipher.rot(7), "./samples/italian-short.txt"))
+results.push(await testCrack(LetterwiseRSA.random()))
 results.push(testEgcd())
 results.push(testModInv())
 results.push(testModPow())
 
+for (const cipher of CaesarCipher.all())
+  results.push(testCipherCorrectness(cipher))
+
 for (const cipher of LetterwiseRSA.all())
-  results.push(testLetterwiseRsa(cipher))
+  results.push(testCipherCorrectness(cipher))
 
 const passed = results.filter(x => x).length
 const failed = results.filter(x => !x).length
@@ -44,7 +48,7 @@ async function testDistanceFrom(textFile = TEXT_FILE) {
   const frequencies = FrequencyAnalysis.of(text)
 
   console.debug(`Computed frequencies for text in ${textFile}`, frequencies)
-  const total = Object.values(frequencies.data)
+  const total = frequencies.values()
     .reduce((x, total) => total + x, 0)
 
   if (total === 1)
@@ -54,8 +58,12 @@ async function testDistanceFrom(textFile = TEXT_FILE) {
   else
     console.debug(`The sum of all frequencies is ${total} (should be 1)`)
 
+  const distance = frequencies.distanceFrom(frequencies)
+  if (distance !== 0)
+    console.warn(`Distance from the analysis to itself should be 0, got ${distance}`)
+
   console.groupEnd()
-  return total >= 0.99 && total <= 1.01
+  return total >= 0.99 && total <= 1.01 && distance === 0
 }
 
 async function testDetectLanguage() {
@@ -70,6 +78,7 @@ async function testDetectLanguage() {
     return language === expected
   }
 
+  console.group("Testing FrequencyAnalysis.detectLanguage()")
   let passed = true
   passed ||= await _test("english", "./samples/english.txt")
   passed ||= await _test("english", "./samples/english-short.txt")
@@ -77,10 +86,11 @@ async function testDetectLanguage() {
   passed ||= await _test("italian", "./samples/italian-short.txt")
   passed ||= await _test("german", "./samples/german.txt")
   passed ||= await _test("german", "./samples/german-short.txt")
+  console.groupEnd()
   return passed
 }
 
-function testEncrypt() {
+function testCaesarEncrypt() {
   console.group("Testing encrypt() with key 13 (ROT13)")
   const plaintext = "The quick brown fox jumps over the lazy dog."
   const expected = "Gur dhvpx oebja sbk whzcf bire gur ynml qbt."
@@ -100,7 +110,7 @@ function testEncrypt() {
   return passed
 }
 
-function testDecrypt() {
+function testCaesarDecrypt() {
   console.group("Testing decrypt() with key 13 (ROT13)")
   const ciphertext = "Gur dhvpx oebja sbk whzcf bire gur ynml qbt."
   const expected = "The quick brown fox jumps over the lazy dog."
@@ -120,20 +130,21 @@ function testDecrypt() {
   return passed
 }
 
-async function testCrack(textFile = TEXT_FILE) {
-  console.group("Testing crack() with key 7")
+async function testCrack(cipher, textFile = TEXT_FILE) {
+  console.group(`Testing crack() with cipher ${cipher.constructor.name} - ${JSON.stringify(cipher.context)}`)
   const expected = await fs.readFile(textFile, 'utf8')
-  const ciphertext = new CaesarCipher({ key: 7 }).encrypt(expected, 7)
+  const ciphertext = cipher.encrypt(expected)
 
-  const cracker = new Cracker({ cipher: CaesarCipher, frequencies })
-  const { cipher, distance, language } = cracker.crack(ciphertext, frequencies)
-  const plaintext = cipher.decrypt(ciphertext)
+  const cracker = new Cracker({ cipher, frequencies })
+  const { cipher: guessedCipher, distance, language } =
+    cracker.crack(ciphertext, frequencies)
+  const plaintext = guessedCipher.decrypt(ciphertext)
 
   console.debug(`Ciphertext is: ${ciphertext}`)
   console.debug(`Computed plaintext is: ${plaintext}`)
   console.debug(`Expected plaintext is: ${expected}`)
   console.debug(`Cracked as ${language} with distance ${distance}`)
-  console.debug("Context of the guessed cipher:", cipher.context)
+  console.debug("Context of the guessed cipher:", guessedCipher.context)
 
   const passed = plaintext === expected
   if (passed)
@@ -145,8 +156,14 @@ async function testCrack(textFile = TEXT_FILE) {
   return passed
 }
 
-function testLetterwiseRsa(cipher) {
-  console.group(`Testing LetterwiseRSA with p=${cipher.context.p}, q=${cipher.context.q}`)
+function testCipherCorrectness(cipher) {
+  if (cipher instanceof LetterwiseRSA)
+    console.group(`Testing correctness of LetterwiseRSA with p=${cipher.context.p}, q=${cipher.context.q}`)
+  else if (cipher instanceof CaesarCipher)
+    console.group(`Testing correctness of CaesarCipher with key ${cipher.context.key}`)
+  else
+    console.group(`Testing correctness of Cipher with context:`, cipher.context)
+
 
   const original = "The quick brown fox jumps over the lazy dog."
   const ciphertext = cipher.encrypt(original)
@@ -156,7 +173,7 @@ function testLetterwiseRsa(cipher) {
   console.debug(`Computed ciphertext is: ${ciphertext}`)
   console.debug(`Computed plaintext is: ${plaintext}`)
 
-  const passed = original === plaintext && original !== ciphertext
+  const passed = original === plaintext
   if (passed)
     console.debug("Cipher seems to be correct")
   else
