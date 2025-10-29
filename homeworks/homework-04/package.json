@@ -1,0 +1,15 @@
+{
+  "name": "statistics-homework-04",
+  "version": "1.0.0",
+  "description": "Law of Large Numbers and Central Limit Theorem empirical demonstration",
+  "main": "index.js",
+  "repository": "https://github.com/jcondor98/statistics",
+  "author": "jcondor",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "chart.js": "^4.5.1"
+  },
+  "devDependencies": {
+    "chartjs-node-canvas": "^5.0.0"
+  }
+}
