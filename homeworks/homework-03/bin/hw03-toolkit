@@ -1,0 +1,114 @@
+#!/usr/bin/env node
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
+import { FrequencyAnalysis, CaesarCipher, LetterwiseRSA, Cracker } from '../src/index.js'
+import { readFile } from 'node:fs/promises'
+
+yargs()
+  .scriptName("hw03-toolkit")
+  .usage('$0 <--analyse|encrypt|decrypt|crack> [--cipher=<cipher>] [input-file]')
+  .command('analyse <input>', 'Perform frequency analysis',
+    y => y.positional('input', { type: 'string', describe: 'Input file' }), analyse)
+  .command('generate-key', 'Generate a random key for a given cipher',
+    y => y.option('cipher', { type: 'string', demandOption: true, describe: 'Cipher to use' }),
+    generateKey,
+  )
+  .command('encrypt <input>', 'Encrypt a ciphertext',
+    y => y
+      .option('cipher', { type: 'string', demandOption: true, describe: 'Cipher to use' })
+      .option('key', { type: 'string', demandOption: true, describe: 'Cipher key' })
+      .positional('input', { type: 'string', describe: 'Input file' }),
+    encrypt,
+  )
+  .command('decrypt <input>', 'Decrypt a ciphertext',
+    y => y
+      .option('cipher', { type: 'string', demandOption: true, describe: 'Cipher to use' })
+      .option('key', { type: 'string', demandOption: true, describe: 'Cipher key' })
+      .positional('input', { type: 'string', describe: 'Input file' }),
+    decrypt,
+  )
+  .command('crack <input>', 'Crack a ciphertext',
+    y => y
+      .option('cipher', { type: 'string', demandOption: true, describe: 'Cipher to use' })
+      .option('frequencies', { type: 'string', demandOption: true, describe: 'Frequency analysis database file' })
+      .positional('input', { type: 'string', describe: 'Input file' }),
+    crack,
+  )
+  .command('list-ciphers', 'List all available ciphers', _ => {
+    for (const name of ['caesar', 'letterwise-rsa'])
+      console.log(name)
+  })
+  .help()
+  .strict()
+  .parse(hideBin(process.argv))
+
+async function analyse(args) {
+  const text = (await readFile(args.input)).toString()
+  const analysis = FrequencyAnalysis.of(text)
+  const output = Object.fromEntries(analysis.entries())
+  console.log(JSON.stringify(output, undefined, 2))
+}
+
+function getCipher(name, key) {
+  switch (name) {
+    case 'caesar':
+      return CaesarCipher.rot(parseInt(key))
+    case 'letterwise-rsa':
+      return new LetterwiseRSA({ key: JSON.parse(key) })
+    default:
+      throw new Error(`Unknown cipher: ${name}`)
+  }
+}
+
+function getCipherClass(name) {
+  switch (name) {
+    case 'caesar':
+      return CaesarCipher
+    case 'letterwise-rsa':
+      return LetterwiseRSA
+    default:
+      throw new Error(`Unknown cipher: ${name}`)
+  }
+}
+
+async function generateKey(args) {
+  switch (args.cipher) {
+    case 'caesar':
+      console.log(Math.random() * 25)
+      break
+    case 'letterwise-rsa':
+      const [p, q] = LetterwiseRSA.pickRandomPrimes()
+      const key = LetterwiseRSA.generateKeys(p, q)
+      console.log(JSON.stringify(key))
+      break
+    default:
+      throw new Error(`Unknown cipher: ${args.cipher}`)
+  }
+}
+
+async function encrypt(args) {
+  const cipher = getCipher(args.cipher, args.key)
+  const text = (await readFile(args.input)).toString()
+  console.log(cipher.encrypt(text))
+}
+
+async function decrypt(args) {
+  const cipher = getCipher(args.cipher, args.key)
+  const text = (await readFile(args.input)).toString()
+  console.log(cipher.decrypt(text))
+}
+
+async function parseFrequencyAnalysisDatabase(file) {
+  const text = (await readFile(file)).toString()
+  return FrequencyAnalysis.manyByLanguage(JSON.parse(text))
+}
+
+async function crack(args) {
+  const cipher = getCipherClass(args.cipher, args.key)
+  const frequencies = await parseFrequencyAnalysisDatabase(args.frequencies)
+  const text = (await readFile(args.input)).toString()
+
+  const guess = new Cracker({ cipher, frequencies }).crack(text)
+  console.log(`Guessed ${guess.cipher.toString()} (${guess.language})\n`)
+  console.log(guess.cipher.decrypt(text))
+}

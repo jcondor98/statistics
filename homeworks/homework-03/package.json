@@ -17,10 +17,14 @@
   "scripts": {
     "test": "ava",
     "build": "esbuild src/index.js --bundle --format=esm --minify --outfile=dist/homework-03.js",
-    "clean": "rm -v dist/*"
+    "clean": "rm -v dist/*",
+    "toolkit": "node ./bin/hw03-toolkit"
   },
   "devDependencies": {
     "ava": "^6.4.1",
     "esbuild": "^0.25.11"
+  },
+  "dependencies": {
+    "yargs": "^18.0.0"
   }
 }
