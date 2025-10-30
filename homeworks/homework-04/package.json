@@ -7,7 +7,11 @@
   "author": "jcondor",
   "license": "UNLICENSED",
   "dependencies": {
-    "chart.js": "^4.5.1"
+    "chart.js": "^4.5.1",
+    "yargs": "^18.0.0"
+  },
+  "scripts": {
+    "toolkit": "node bin/hw04-toolkit"
   },
   "devDependencies": {
     "chartjs-node-canvas": "^5.0.0"

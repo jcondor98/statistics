@@ -1,0 +1,72 @@
+#!/usr/bin/env node
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
+import { writeFile } from 'node:fs/promises'
+import { ChartJSNodeCanvas } from 'chartjs-node-canvas';
+import { Simulator, Plotter, LinePlotter, BarPlotter } from '../src/index.js'
+
+
+yargs()
+  .scriptName("hw04-toolkit")
+  .usage('$0 plot [--paths n] [--trials n] [--height h] [--width w] <output-dir>')
+  .command('plot <outdir>', 'Plot the charts of a simulation to outdir/ (must exist)',
+    y => y
+      .option('width', { type: 'number', describe: 'Image width (pixels)', default: 1240 })
+      .option('height', { type: 'number', describe: 'Image height (pixels)', default: 720 })
+      .option('paths', { type: 'number', describe: 'Number of paths (i.e. trajectories)', default: 20 })
+      .option('trials', { type: 'number', describe: 'Number of trials per path', default: 40000 })
+      .option('p', { type: 'number', describe: 'Probability of success for each trial', default: 0.5 })
+      .positional('outdir', { type: 'string', demandOption: true, describe: 'Output directory' }),
+    plot,
+  )
+  .help()
+  .strict()
+  .parse(hideBin(process.argv))
+
+function chartCallback(ChartJS) {
+  ChartJS.defaults.responsive = true
+  ChartJS.defaults.maintainAspectRatio = false
+  Plotter.configureChartDefaults(ChartJS)
+}
+
+async function plot(args) {
+  const simulation = new Simulator({
+    paths: args.paths,
+    trials: args.trials,
+    p: args.p,
+  }).simulate()
+
+  exportSimulation(new LinePlotter({
+    data: simulation.relativeFrequency(),
+    xLabel: 'Trial',
+    yLabel: 'Frequency',
+    min: -0.5,
+    max: 0.5,
+  }), args.width, args.height, `${args.outdir}/relative-frequency.png`)
+
+  const gaussianFrequency = simulation.gaussianFrequency()
+
+  exportSimulation(new LinePlotter({
+    data: gaussianFrequency,
+    xLabel: 'Trial',
+    yLabel: 'Zₙ',
+  }), args.width, args.height, `${args.outdir}/gaussian-frequency.png`)
+
+  exportSimulation(new BarPlotter({
+    data: gaussianFrequency,
+    xLabel: 'Trial',
+    yLabel: 'Zₙ',
+    min: -3,
+    max: 3,
+    bars: 150,
+  }), args.width, args.height, `${args.outdir}/gaussian-bars.png`)
+}
+
+async function exportSimulation(plotter, width, height, outfile) {
+  const configuration = plotter.plot()
+
+  const chartJSNodeCanvas = new ChartJSNodeCanvas({ width, height, chartCallback })
+  const buffer = await chartJSNodeCanvas.renderToBuffer(configuration)
+  await writeFile(outfile, buffer, 'base64')
+}
+

@@ -19,7 +19,7 @@ All the work related to this homework can be found in the
 [repository](https://github.com/jcondor98/statistics), in the
 `homeworks/homework-03/` directory.
 
-## Theoretical context
+## Theoretical background
 
 The RSA algorithm (acronimous of Rivest-Shamir-Adleman) is an asymmetric
 cipher. It uses different keys for encryption and decryption, solving the
@@ -72,7 +72,7 @@ encrypted.
 
 ## Implementation
 
-### Metodology and resources
+### Methodology and resources
 
 All the related work can be found in the `homeworks/homework-03` directory of
 the repository. The directory itself is structured as an _npm_ package

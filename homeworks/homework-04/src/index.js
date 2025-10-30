@@ -77,8 +77,10 @@ export class Simulation {
 }
 
 export class Plotter {
-  constructor({ data }) {
+  constructor({ data, xLabel, yLabel }) {
     this.data = data
+    this.xLabel = xLabel
+    this.yLabel = yLabel
   }
 
   static configureChartDefaults(Chart) {
@@ -87,11 +89,14 @@ export class Plotter {
     Chart.defaults.plugins.legend.display = false
   }
 
+  plot() {
+    throw new Error("Not implemented")
+  }
 }
 
 export class LinePlotter extends Plotter {
-  constructor({ data, min, max }) {
-    super({ data })
+  constructor({ min, max, ...args }) {
+    super({ ...args })
     this.min = min
     this.max = max
   }
@@ -109,13 +114,13 @@ export class LinePlotter extends Plotter {
       options: {
         scales: {
           x: {
-            title: { display: true, text: 'Trial' },
+            title: { display: true, text: this.xLabel },
             ticks: {
               callback: (_, i) => (i % labelStep === 0 ? i.toString() : '')
             }
           },
           y: {
-            title: { display: true, text: 'Bₙ' },
+            title: { display: true, text: this.yLabel },
             min: this.min,
             max: this.max,
           },
@@ -129,8 +134,8 @@ export class LinePlotter extends Plotter {
 }
 
 export class BarPlotter extends Plotter {
-  constructor({ data, min, max, bars, step }) {
-    super({ data })
+  constructor({ min, max, bars, step, ...args }) {
+    super({ ...args })
     this.min = min
     this.max = max
     this.bars = bars
@@ -156,8 +161,8 @@ export class BarPlotter extends Plotter {
       },
       options: {
         scales: {
-          x: { title: { display: true, text: 'Zₙ' } },
-          y: { title: { display: true, text: 'Frequency' } },
+          x: { title: { display: true, text: this.xLabel } },
+          y: { title: { display: true, text: this.yLabel } },
         },
       },
     }
