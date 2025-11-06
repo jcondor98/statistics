@@ -169,7 +169,7 @@ distribution):
 
 <div>
 $$
-    \sigma^2 = \frac{1}{n} \sum_{i=1}^n (x_i - \mu)^2
+    \sigma^2 = \frac{1}{n - 1} \sum_{i=1}^n (x_i - \mu)^2
 $$
 </div>
 
@@ -179,7 +179,7 @@ The variance can be easily computed in JavaScript:
 export function variance(values) {
   const mu = mean(values)
   const sum = values.reduce((acc, x) => acc + Math.pow(x - mu, 2), 0)
-  return sum / values.length
+  return sum / (values.length - 1)
 }
 ```
 

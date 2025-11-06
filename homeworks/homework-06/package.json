@@ -1,0 +1,23 @@
+{
+  "name": "statistics-homework-05",
+  "version": "1.0.0",
+  "description": "Recurrent relations algorithms for arithmetic mean and variance",
+  "homepage": "https://github.com/jcondor98/statistics#readme",
+  "bugs": {
+    "url": "https://github.com/jcondor98/statistics/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jcondor98/statistics.git"
+  },
+  "license": "UNLICENSED",
+  "author": "jcondor",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "yargs": "^18.0.0"
+  }
+}

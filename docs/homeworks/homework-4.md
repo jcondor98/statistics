@@ -96,8 +96,8 @@ simulations and generate relative charts offline and without a browser.
 The [`chart.js`](https://www.chartjs.org) library has been used to plot charts,
 so the outcome of the simulations can be presented in a clear way.
 
-The [`yargs`]() library has been used to parse the command-line arguments of
-the toolkit.
+The [`yargs`](https://yargs.js.org/) library has been used to parse the
+command-line arguments of the toolkit.
 
 No third party libraries were used to actually perform the simulations.
 
