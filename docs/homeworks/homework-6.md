@@ -129,6 +129,7 @@ export class BatchMean extends Mean {
 
   push(x) {
     this.values.push(x)
+    return this
   }
 }
 ```
@@ -151,13 +152,13 @@ $$
 
 ```js
 export class RecurrentSumMean extends Mean {
-  constructor(sum, n) {
+  constructor({ sum, n }) {
     super()
     this.sum = sum
     this.n = n
   }
 
-  static from(values) {
+  static from(values = []) {
     const sum = values.reduce((x, y) => x + y, 0)
     const n = values.length
     return new RecurrentSumMean({ sum, n })
@@ -203,6 +204,7 @@ export class OnlineMean extends Mean {
   constructor(values = []) {
     super()
     this.mu = 0
+    this.n = 0
     for (const x of values)
       this.push(x)
   }
@@ -216,7 +218,8 @@ export class OnlineMean extends Mean {
   }
 
   push(x) {
-    this.mu = this.mu + (x - this.mu) / this.n
+    this.n += 1
+    this.mu += (x - this.mu) / this.n
     return this
   }
 }

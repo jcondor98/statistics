@@ -63,7 +63,7 @@ The _median_ is defined as the point $\tilde{x}$ such that half the samples are
 smaller than $\tilde{x}$ and half the samples are larger than $\tilde{x}$.
 
 Formally, let $X = { x_1, x_2, \dots, x_n }$ be a sorted sequence of samples
-(in growing order). Then the mean is defined as:
+(in growing order). Then the median is defined as:
 
 <div>
 $$
