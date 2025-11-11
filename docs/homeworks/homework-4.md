@@ -584,7 +584,7 @@ trials](/assets/img/homework-04/trials-huge/gaussian-bars.png)
 Especially with a higher number of trajectories, we can really appreciate the
 effects of the Central Limit Theorem in the bar chart.
 
-### Conclusions
+## Conclusions
 
 We developed a small framework to perform computer simulation of a large number
 of Bernoulli trials.
