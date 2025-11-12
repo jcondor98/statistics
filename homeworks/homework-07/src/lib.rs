@@ -1,11 +1,10 @@
-use std::i16;
-
 use rand::prelude::*;
 
 #[derive(Debug, Clone)]
 pub struct Simulator {
-    n: u64,
-    p: f32,
+    pub n: u32,
+    pub m: u32,
+    pub p: f32,
 }
 
 pub fn scale(x: u32, p: f32) -> u32 {
@@ -13,28 +12,28 @@ pub fn scale(x: u32, p: f32) -> u32 {
 }
 
 impl Simulator {
-    pub fn new(n: u64, p: f32) -> Self {
-        Self { n, p }
+    pub fn new(n: u32, m: u32, p: f32) -> Self {
+        Self { n, m, p }
     }
 
-    pub fn run(&self) -> Vec<i8> {
+    pub fn random_walk(&self) -> Vec<i32> {
         let mut rng = rand::rng();
-        (0..self.n)
-            .map(|_| rng.next_u32())
-            .map(|r| if r < scale(u32::MAX, self.p) { 1 } else { -1 })
-            .collect()
-    }
+        let mut walk: Vec<i32> = Vec::with_capacity(self.n as usize);
+        let mut sum: i32 = 0;
 
-    pub fn random_walk(trials: &[i8]) -> Vec<i16> {
-        let mut walk: Vec<i16> = Vec::with_capacity(trials.len());
-        let mut sum: i16 = 0;
-
-        for x in trials {
-            sum += *x as i16;
+        for _ in 0..self.n {
+            sum += self.random_step(&mut rng) as i32;
             walk.push(sum);
         }
 
         walk
+    }
+
+    fn random_step(&self, rng: &mut ThreadRng) -> i8 {
+        let violated = (0..self.m)
+            .map(|_| rng.random_bool(self.p as f64))
+            .any(|v| v);
+        if violated { -1 } else { 1 }
     }
 }
 
