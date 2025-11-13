@@ -17,3 +17,4 @@ The course professor is Tommaso Gastaldi.
 - [Homework 05: Location and dispersion](/homework-5)
 - [Homework 06: Recurrent relations for arithmetic mean and variance](/homework-6)
 - [Homework 07: Random walks](/homework-7)
+- [Homework 07: Bernoulli processes and random walks](/homework-8)

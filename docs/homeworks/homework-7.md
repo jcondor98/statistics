@@ -44,7 +44,7 @@ random variable as follows:
 
 <div>
 $$
-    X \sim B(p) = \sum_{i=0}^n Y_n
+    X \sim B(p) = \sum_{i=0}^n Y_i
 $$
 </div>
 
