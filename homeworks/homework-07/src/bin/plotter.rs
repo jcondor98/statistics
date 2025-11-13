@@ -40,14 +40,10 @@ struct Cli {
 
 fn main() {
     let args = Cli::parse();
-    plot_line_chart(&args);
-}
-
-fn plot_line_chart(args: &Cli) {
     let p = args.p.unwrap_or_else(|| compute_fair_p(args.m, 0.5));
 
     let sim = Simulator::new(args.n, args.m, p);
-    let walks: Vec<Vec<i32>> = (0..args.trajectories).map(|_| sim.random_walk()).collect();
+    let walks: Vec<RandomWalk> = (0..args.trajectories).map(|_| sim.random_walk()).collect();
 
     let root = BitMapBackend::new(&args.output, (args.width, args.height)).into_drawing_area();
     root.fill(&WHITE).unwrap();
@@ -55,7 +51,16 @@ fn plot_line_chart(args: &Cli) {
     let (y_min, y_max) = y_bounds(&walks, args.n as i32);
     let x_max = args.n as i32;
 
-    let caption = format!("Random walk with n={}, m={}, p={:.3}", args.n, args.m, p);
+    let caption = if args.trajectories == 1 {
+        let final_value = walks.get(0).unwrap().final_value();
+        format!(
+            "Random walk with n={}, m={}, p={:.3} - Last value: {}",
+            args.n, args.m, p, final_value,
+        )
+    } else {
+        format!("Random walk with n={}, m={}, p={:.3}", args.n, args.m, p)
+    };
+
     let mut chart = ChartBuilder::on(&root)
         .caption(caption, ("sans-serif", 24))
         .margin(20)
@@ -73,9 +78,10 @@ fn plot_line_chart(args: &Cli) {
 
     for w in walks {
         let w: Vec<(i32, i32)> = w
-            .into_iter()
+            .as_slice()
+            .iter()
             .enumerate()
-            .map(|(i, v)| (i as i32, v))
+            .map(|(i, v)| (i as i32, *v))
             .collect();
         chart
             .draw_series(LineSeries::new(w, &random_color()))
@@ -85,9 +91,14 @@ fn plot_line_chart(args: &Cli) {
     root.present().unwrap();
 }
 
-// TODO: Safe casting
 fn compute_fair_p(m: u32, target: f32) -> f32 {
     1.0 - (1.0 - target).powf(1.0 / (m as f32))
+}
+
+fn y_bounds(walks: &Vec<RandomWalk>, n: i32) -> (i32, i32) {
+    let y_min = walks.iter().flatten().min().copied().unwrap_or(-n);
+    let y_max = walks.iter().flatten().max().copied().unwrap_or(n);
+    (y_min, y_max)
 }
 
 fn random_color() -> RGBColor {
@@ -97,10 +108,4 @@ fn random_color() -> RGBColor {
         rng.random_range(0..=255),
         rng.random_range(0..=255),
     )
-}
-
-fn y_bounds(walks: &Vec<Vec<i32>>, n: i32) -> (i32, i32) {
-    let y_min = walks.iter().flatten().min().copied().unwrap_or(-n);
-    let y_max = walks.iter().flatten().max().copied().unwrap_or(n);
-    (y_min, y_max)
 }

@@ -1,14 +1,42 @@
+use std::ops::Deref;
+
 use rand::prelude::*;
 
 #[derive(Debug, Clone)]
 pub struct Simulator {
+    /// Number of weeks
     pub n: u32,
+
+    /// Number of attackers
     pub m: u32,
+
+    /// Probability of violating the server
     pub p: f32,
 }
 
-pub fn scale(x: u32, p: f32) -> u32 {
-    (p * x as f32).trunc() as u32
+pub struct RandomWalk(Vec<i32>);
+
+impl Deref for RandomWalk {
+    type Target = Vec<i32>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<'a> IntoIterator for &'a RandomWalk {
+    type Item = &'a i32;
+    type IntoIter = std::slice::Iter<'a, i32>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter()
+    }
+}
+
+impl RandomWalk {
+    pub fn final_value(&self) -> i32 {
+        self.0.last().copied().unwrap_or(0)
+    }
 }
 
 impl Simulator {
@@ -16,7 +44,8 @@ impl Simulator {
         Self { n, m, p }
     }
 
-    pub fn random_walk(&self) -> Vec<i32> {
+    /// Generate a random walk
+    pub fn random_walk(&self) -> RandomWalk {
         let mut rng = rand::rng();
         let mut walk: Vec<i32> = Vec::with_capacity(self.n as usize);
         let mut sum: i32 = 0;
@@ -26,27 +55,14 @@ impl Simulator {
             walk.push(sum);
         }
 
-        walk
+        RandomWalk(walk)
     }
 
+    /// Generate a random step
     fn random_step(&self, rng: &mut ThreadRng) -> i8 {
         let violated = (0..self.m)
             .map(|_| rng.random_bool(self.p as f64))
             .any(|v| v);
         if violated { -1 } else { 1 }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::scale;
-
-    #[test]
-    fn should_scale_properly() {
-        assert_eq!(100, scale(200, 0.5));
-        assert_eq!(2, scale(4, 0.5));
-        assert_eq!(100, scale(400, 0.25));
-        assert_eq!(0, scale(100, 0.0));
-        assert_eq!(100, scale(100, 1.0));
     }
 }
