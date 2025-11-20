@@ -15,7 +15,7 @@ main interpretations of probability, among with their incompatibilities.
 
 Then, we will explain how the axiomatic approach resolves such inconsistencies.
 
-## Probability
+## Definitions of Probability
 
 Intuitively, probability can be seen as the likelihood of an event occurring.
 In probability theory, many different formlizations of this key concept have
@@ -155,3 +155,127 @@ geometric fashion. Let's define $X$ geometrically (credits brilliant.org):
 
 We can easily understand that in this case $\Pr(X) = \frac{1}{2}$, as we can
 compare the probabilities of arrival times collectively as lengths of segments.
+
+## The axiomatic approach
+
+The axiomatic approach in probability was introduced by Andrey Kolmogorov in
+1933, in its work [_Foundations of the theory of
+probability_](https://archive.org/details/foundationsofthe00kolm/page/n11/mode/2up).
+They provide an unambiguous and strict foundation for probability theory.
+
+To quote [a great quality
+article](https://www.stat.berkeley.edu/~aldous/Real_World/kolmogorov.html) from
+the Berkeley University:
+
+> The Kolmogorov axioms are technically useful in providing an agreed notion of
+> what is a completely specified probability model within which questions have
+> unambiguous answers. This eliminates cases like Bertrand's paradox which is
+> simply an ambiguously defined model. But they encourage both a false sense of
+> security (that the act of formulating a model within the mathematical
+> framework somehow guarantees it is a valid representation of the real world
+> phenomenon) and a narrowness of vision (that aspects of the real world that
+> cannot be formulated within the framework are somehow "not probability").
+
+### Kolmogorov axioms
+
+In his works, Kolmogorov defined three axioms to formalize the notion of
+probability. First, the following context is requried:
+
+* let $\Omega$ be the _sample space_, i.e. the set of all possible outcomes
+* let $F$ be the space of _events_; $F$ must be a $\sigma$-algegra of $\Omega$
+* let $\Pr(A)$ be the _probability measure_, assigning a probability value to
+  each event $A \in F$
+
+Using the context above as a base, we can give the actual Kolmogorov axioms:
+
+1. The probability of an event is always non-negative, i.e.:
+   <div>
+       $$
+       \Pr(A) \ge 0 \quad \forall\ A \in F
+       $$
+   </div>
+
+2. The probability that at least one outcome $\omega \in \Omega$ will occur is
+   equal to $1$:
+   <div>
+       $$
+       \Pr(\Omega) = 1
+       $$
+   </div>
+   It follows that $0 \le \Pr(A) \le 1 \quad \forall\ A \in F$.
+
+3. For every $E_i$ such that all $E_i$ are _mutually exclusive_
+   (i.e. $\Pr(E_j \cup E_k) = 0 \ \forall\ j,k$) it holds:
+   <div>
+       $$
+       \Pr\left( \ \bigcup_{i=1}^\infty E_i \right) = \sum_{i=1}^\infty P(E_i)
+       $$
+   </div>
+
+### Derived property
+
+#### Subadditivity property
+
+Let $A, B \in F$ be two events. First, notice that the following holds:
+
+<div>
+    $$
+    A \cup B = A \cup (B \setminus A)
+    $$
+</div>
+
+This statement allows us to use the third axiom, as $A$ and $B \setminus A$ are
+always disjoint. By the third axiom follows:
+
+<div>
+    $$
+    \Pr(A \cup B) = \Pr(A \cup (B \setminus A)) = \Pr(A) + \Pr(B \setminus A)
+    $$
+</div>
+
+As $B \subseteq B \setminus A$, it follows that:
+
+<div>
+    $$
+    \Pr(B) \ge \Pr(B \setminus A)
+    \quad \iff \quad
+    \Pr(A \cup B) \le \Pr(A) + \Pr(B)
+    $$
+</div>
+
+#### Inclusion-exclusion principle
+
+Let $A, B \in F$ be two events. Simply by the properties of sets, the following
+decomposition holds:
+
+<div>
+    $$
+    B = (B \setminus A) \cup (A \cap B)
+    $$
+</div>
+
+Then, by the third Kolmogorov axiom:
+
+<div>
+    $$
+    \Pr(B) = \Pr(B \setminus A) + \Pr(A \cap B)
+    \quad \iff \quad
+    \Pr(B \setminus A) = \Pr(B) - \Pr(A \cap B)
+    $$
+</div>
+
+In the previous section, we have already seen that the following holds:
+
+<div>
+    $$
+    \Pr(A \cup B) = \Pr(A) + \Pr(B \setminus A)
+    $$
+</div>
+
+Then:
+
+<div>
+    $$
+    \Pr(A \cup B) = \Pr(A) + \Pr(B) - \Pr(A \cap B)
+    $$
+</div>
