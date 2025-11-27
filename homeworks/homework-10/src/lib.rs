@@ -1,6 +1,5 @@
-use std::ops::Deref;
-
 use rand::{distr::Bernoulli, prelude::*};
+use std::ops::Deref;
 
 #[derive(Debug, Clone)]
 pub struct Simulator {
@@ -12,25 +11,6 @@ pub struct Simulator {
 
     /// Success rate
     pub lambda: f32,
-}
-
-pub struct Simulation(Vec<i32>);
-
-impl Deref for Simulation {
-    type Target = Vec<i32>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl<'a> IntoIterator for &'a Simulation {
-    type Item = &'a i32;
-    type IntoIter = std::slice::Iter<'a, i32>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.iter()
-    }
 }
 
 impl Simulation {
@@ -61,5 +41,24 @@ impl Simulator {
         }
 
         Simulation(data)
+    }
+}
+
+pub struct Simulation(Vec<i32>);
+
+impl Deref for Simulation {
+    type Target = Vec<i32>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<'a> IntoIterator for &'a Simulation {
+    type Item = &'a i32;
+    type IntoIter = std::slice::Iter<'a, i32>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter()
     }
 }
