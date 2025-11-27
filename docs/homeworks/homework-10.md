@@ -231,4 +231,72 @@ To obtain an empirical basis for our posterior theoretical analysis, we are
 going to generate some charts with the CLI tool we crafted. Such graphs are
 given below, along with their relative parameters.
 
+![Simulation with `-n 1000 --lambda 1`](/assets/img/homework-10/poisson-n1000-l1.png)
+![Simulation with `-n 1000000 --lambda 1`](/assets/img/homework-10/poisson-n1000000-l1.png)
+![Simulation with `-n 1000 --lambda 10`](/assets/img/homework-10/poisson-n1000-l10.png)
+![Simulation with `-n 1000000 --lambda 10`](/assets/img/homework-10/poisson-n1000000-l10.png)
+![Simulation with `-n 1000 --lambda 100`](/assets/img/homework-10/poisson-n1000-l100.png)
+![Simulation with `-n 1000000 --lambda 100`](/assets/img/homework-10/poisson-n1000000-l100.png)
+
 ## Theoretical analysis
+
+### Stochastic process
+
+The performed simulation approximates a notorious distribution known as the
+_Poisson distribution_. Such distribution models the expectation of $lambda$
+successes over a continuous time span $[0,T]$.
+
+In order to emulate a Poisson distribution, the time span $[0,T]$ is divided
+into $n$ samples. At each sample, there is a $\frac{\lambda}{n}$ probability of
+success. Naturally, the higher $n$ is, the closer to a Poisson distribution the
+simulation is.
+
+Let $X \sim \text{Pois}(\lambda)$. Given an arbitrary value $k$, the
+_probability mass function_ gives us the probability of $X = k$:
+
+<div>
+    $$
+    \Pr(X = k) = \frac{\lambda^k \ e^{-k}}{k!}
+    $$
+</div>
+
+### Binomial convergence
+
+Strictly speaking, the simulation we did actually perform a Binomial stochastic
+process with $p = \frac{\lambda}{n}$. Moreover, we also said that it emulates a
+Poisson distribution. We can deduce that a Binomial distribution theoretically
+converges to a Poisson when $n \to \infty$:
+
+<div>
+    $$
+    X_n \sim \text{Bernoulli} \left( \frac{\lambda}{n}, n \right)
+    \quad \iff \quad
+    \lim_{n \to \infty} X_n \sim \text{Pois}(\lambda)
+    $$
+</div>
+
+### On the $\lambda$ parameter
+
+We already said the $\lambda$ parameter represents the expected number of
+successes over a time span $[0,T]$.
+
+We know that for a Binomial distribution the expected value is:
+
+<div>
+    $$
+    X_n \sim \text{Bernoulli}(p, n)
+    \quad \iff \quad
+    \mathbb{E}(X_n) = p \cdot n = \frac{\lambda}{n} n = \lambda
+    $$
+</div>
+
+Moreover, we know that a Bernoulli converges to a Poisson distribution when $n
+\to \infty$. So we can conclude:
+
+<div>
+    $$
+    X \sim \text{Pois}(\lambda)
+    \quad \iff \quad
+    \mathbb{E}(X) = \lambda
+    $$
+</div>
