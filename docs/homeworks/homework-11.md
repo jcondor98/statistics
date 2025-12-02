@@ -89,7 +89,8 @@ Finally, to obtain an actual Wiener process $W_t$, we can make $n$ diverge:
 <div>
     $$
     W_t = \lim_{n \to \infty} W_n(t) =
-    \lim_{n \to \infty} \frac{1}{\sqrt{n}} S_{\lfloor nt \rfloor}
+    \lim_{n \to \infty} \frac{1}{\sqrt{n}} S_{\lfloor nt \rfloor} =
+    \lim_{n \to \infty} \frac{1}{\sqrt{n}} \sum_{i=1}^{\lfloor nt \rfloor} X_i
     $$
 </div>
 
