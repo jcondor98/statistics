@@ -6,6 +6,17 @@ date: 2025-12-20 12:00:00 +0200
 permalink: /thesis/
 ---
 
+<!--
+Resources:
+https://www.mdpi.com/2624-800X/3/3/22
+https://www.mdpi.com/2227-9709/11/4/83
+https://ieeexplore.ieee.org/document/9926545
+https://ieeexplore.ieee.org/document/9084673
+https://arxiv.org/pdf/2209.12398
+https://www.stat.berkeley.edu/~ryantibs/timeseries-f23/lectures/arima.pdf
+https://web.stanford.edu/~boyd/papers/pdf/ewmm.pdf
+-->
+
 {% include mathjax.html %}
 
 ## Abstract
