@@ -1,4 +1,12 @@
-# Statistical online algorithms for anomaly and threat detection
+---
+title: Autoregressive Moving Models in anomaly and threat detection
+description: How ARMMs can lead to precise, efficient detection of suspicious behaviours
+author: Paolo Lucchesi
+date: 2025-12-20 12:00:00 +0200
+permalink: /thesis/
+---
+
+{% include mathjax.html %}
 
 ## Abstract
 
@@ -63,26 +71,71 @@ memory to work with any number of values.
 
 ### Autoregressive Moving Average
 
-### Exponentially Weighted Moving Average
+The _Autoregressive Moving Average_ (_ARMA_ from now on) is a statistical
+metric used to identify trends in time-series data. The key idea is that, in
+contrast to simple average metrics, the influence of past observed data
+gradually fades, so newer data weights more on the metric value. ARMA models
+are built on top of _Autoregressive Models_ (i.e. _AR_ models) and _Moving
+Average_ models (i.e. _MA_ models).
 
-## Statistical algorithms analysis
+#### Autoregressive models
 
-In the following sections we will analyse some of the most known statistical
-online algorithms. For each algorithm, we will:
+An AR model represents a stochastic differential equation inwhich the output
+variable is linearly dependant (in time) on the previous deterministic and
+random input.
 
-* give a theoretical background
-* give an example implementation
-* show how the algorithm is used in widely deployed solutions
-* reference some relative cutting-edge research
+The formal definition for an AR model of order $p$ is given below:
+
+<div>
+$$
+\text{AR}(p): \quad x_t = \sum_{i = 1}^p \phi_i x_{t - i} + \omega_t
+$$
+</div>
+
+where $\phi_1, \dots, \phi_p$ are fixed parameters, $p \in \mathbb{N}$ and
+$\omega_*$ are stochastic parameters.
+
+#### Moving Average models
+
+MA models can be seen as a complement of AR models. Unlike their counterpart,
+MA models evolve linearly with the _error_ (i.e. the stochastic process)
+instead of a deterministic input.
+
+The formal definition for a MA model of order $q$ is given below:
+
+<div>
+$$
+\text{MA}(p): \quad x_t
+    = \omega_t + \sum_{i = 1}^q \theta_i \omega_{t - i}
+    = \sum_{i = 0}^q \theta_i \omega_{t - i}
+$$
+</div>
+
+where $\theta_1, \dots, \theta_p$ are fixed parameters, $q \in \mathbb{N}$ and
+$\omega_*$ are stochastic parameters.
+
+#### Autoregressive Moving Average models
+
+On top of the $\text{AR}(p)$ and $\text{MA}(q)$ definitions, the _ARMA model_
+can be formalized:
+
+<div>
+$$
+\text{ARMA}(p, q): \quad x_t =
+    \omega_t + \sum_{i = 1}^p \phi_i x_{t - i} + \sum_{i = 1}^q \theta_{t - i} \omega_{t - i}
+$$
+</div>
+
+As by definition ARMA models take into account the influence of stochastic
+processes (e.g. noise), they are often suitable to describe realistic
+scenarios.
 
 ### Exponential Weighted Moving Average
 
 The _Exponential Weighted Moving Average_ (_EWMA_ from now on) is a statistical
-metric used to identify trends in time-series data. The key idea is that past
-observed data fades exponentially, so newer data weights more on the metric
-value.
-
-#### Theoretical definition
+metric which can be defined as a special case of the ARMA. Specifically, it is
+a completely deterministic ARMA metric that does not take into account the
+potential influence of stochastic processes.
 
 An extensive theoretical explaination on how EWMA works and can be implemented
 in moving models is given in [an awesome article from the Stanford
@@ -90,26 +143,60 @@ University](https://web.stanford.edu/~boyd/papers/pdf/ewmm.pdf).
 
 Let $x = x_1, x_2, \dots, x_n$ be a vector (i.e. our data). Let $\beta \in
 (0,1)$ be the _forgetting factor_. The _Exponential Weighted Moving Average_ is
-defined as follows:
+defined as follows, as a recurrent relation:
 
-$$
-\tilde{x}_t = \alpha_t \sum_{\tau = 1}^t \beta^{t - \tau} x_{\tau}
-$$
-
-where the _normalization constant_ $\alpha_t$ is defined as:
-
-$$
-\alpha_t = \frac{1 - \beta}{1 - \beta^t}
-$$
-
-The EWMA can be defined as a recurrent relation, allowing for efficient, online
-implementations:
-
+<div>
 $$
 \tilde{x}_{t+1} = \frac{\alpha_{t+1}}{\alpha_t} \beta \tilde{x}_t + \alpha_{t+1} x_{t+1}
 $$
+</div>
 
-#### Implementation
+where the _normalization constant_ $\alpha_t$ is defined as:
+
+<div>
+$$
+\alpha_t = \frac{1 - \beta}{1 - \beta^t}
+$$
+</div>
+
+This EWMA definition allows for efficient, online implementations.
+
+The EWMA can also be defined in a simplified manner with a fixed $alpha$
+parameter $\forall t$:
+
+<div>
+$$
+\tilde{x}_{t+1} = (1 - \alpha) \tilde{x}_t + \alpha x_{t+1}, \quad \alpha \in (0, 1)
+$$
+</div>
+
+As already stated, the EWMA can be defined in terms of an $\text{ARMA}(1, 0)$:
+
+<div>
+$$
+\text{ARMA}(1, 0) = y_t = \omega_t + \phi y_{t - i}
+$$
+</div>
+
+In order to eliminate the stochastic process $\omega_t$ and obtain the EWMA
+definition given before, let:
+
+<div>
+$$
+\begin{cases}
+    \omega_t &= \alpha x_t \\
+    \phi &= 1 - \alpha
+\end{cases}
+$$
+</div>
+
+With those identification, we can therefore obtain the exact definition of an
+EWMA model. Such obtained definition can be turned into the recurrent relation
+defined at the beginning of this section by induction.
+
+## Implementations and practical use
+
+### EWMA example implementation
 
 In order to understand how EWMA can work in a practical application, we give a
 basic JavaScript implementation below:
@@ -123,7 +210,7 @@ export class Ewma {
         this.increment = increment
     }
 
-    update(value, tau = self.t + self.increment) {
+    update(value, tau = this.t + this.increment) {
         const alphaT = this.alpha()
         const alphaTau = this.alpha(tau)
         this.current =
@@ -137,7 +224,7 @@ export class Ewma {
 
     batch(data = []) {
         return data.map((x, i) =>
-            this.update(value, i + self.t + self.increment))
+            this.update(value, i + this.t + this.increment))
     }
 }
 ```
@@ -156,7 +243,7 @@ const updated = ewma.update(1)
 ewmaValues.push(updated) // Do something with the updated EWMA value
 ```
 
-#### Usage in threat detection
+### EWMA usage in threat detection
 
 In the context of cybersecurity, the EWMA is a useful metric to early detect
 anomalies, especially for network traffic and CPU usage. More specifically, it
@@ -204,15 +291,19 @@ actual value exceeds the expected trend:
 </rule>
 ```
 
-#### Research
+## Research
 
-Lately, sophisticated detection models making use of EWMA and EWMA-like metrics
-have been developed.
+Lately, sophisticated detection models making use of ARMA models, EWMA and
+EWMA-like metrics have been developed.
+
+### Seasonal anomaly detection for HTTP applications
 
 The article [_Hourly Network Anomaly Detection on HTTP Using Exponential Random
 Graph Models and Autoregressive Moving Average_ (R. Li, M. Tsikerdekis, A.
 Emanuelson - 2022)](https://www.mdpi.com/2624-800X/3/3/22) formalizes a model
-for anomaly detection in structured network infrastructures:
+for anomaly detection in structured network infrastructures. The model has been
+used to detect suspicious behaviours in the context of HTTP applications.
+Citing the abstract of the article:
 
 > We use exponential random graph models (ERGMs) in order to flatten hourly
 > network topological characteristics into a time series, and Autoregressive
@@ -222,13 +313,5 @@ for anomaly detection in structured network infrastructures:
 > and over the HTTP protocol. We demonstrate the effectiveness of our method
 > using real-world data for creating exfiltration scenarios.
 
-In this context, _Autoregressive Moving Average_ can be considered as a more
-general, stochastic EWMA metric which also takes random noise into
-consideration.
-
 In the article, the authors point out that the formulated model showed quite
 promising results against _DNS exfiltration_.
-
-### Isolation Forest
-
-
