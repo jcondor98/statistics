@@ -6,20 +6,7 @@ date: 2025-12-20 12:00:00 +0200
 permalink: /thesis/
 ---
 
-<!--
-Resources:
-https://www.mdpi.com/2624-800X/3/3/22
-https://www.mdpi.com/2227-9709/11/4/83
-https://ieeexplore.ieee.org/document/9926545
-https://ieeexplore.ieee.org/document/9084673
-https://arxiv.org/pdf/2209.12398
-https://www.stat.berkeley.edu/~ryantibs/timeseries-f23/lectures/arima.pdf
-https://web.stanford.edu/~boyd/papers/pdf/ewmm.pdf
--->
-
 {% include mathjax.html %}
-
-## Abstract
 
 ## Introduction
 
@@ -35,6 +22,13 @@ their technical nature, and in the presence of usual, legit activity.
 In particular, statistical _online algorithms_ allow to build real-time,
 numerically stable, noise-resistant, computationally efficient models for fast
 and reliable threat detection.
+
+Statistical _Autoregressive Moving Average_ models can be very effective in
+achieving such goal. They are often relatively easy to build and deploy,
+customizable via parameterization, and can take into account contextual
+stochastic processes (e.g. noise or errors). Moreover, they can be built to be
+self-adjusting to some extent, especially when they are needed to evolve in
+relation to time.
 
 ### Solutions for anomaly and threat detection
 
@@ -88,6 +82,10 @@ contrast to simple average metrics, the influence of past observed data
 gradually fades, so newer data weights more on the metric value. ARMA models
 are built on top of _Autoregressive Models_ (i.e. _AR_ models) and _Moving
 Average_ models (i.e. _MA_ models).
+
+A very clear and high-quality introduction to ARMA models is given in [a
+distinguished lecture by the Berkeley
+University](https://www.stat.berkeley.edu/~ryantibs/timeseries-f23/lectures/arima.pdf).
 
 #### Autoregressive models
 
@@ -207,6 +205,12 @@ defined at the beginning of this section by induction.
 
 ## Implementations and practical use
 
+In this section we will explore how ARMA models can be used in practice. We
+will give some example implementations, and we will also see how modern and
+widely used cybersecurity solution can make use of them. A particular focus
+will be dedicated to the EWMA-based models, which are the most simple yet
+powerful ARMA model to use.
+
 ### EWMA example implementation
 
 In order to understand how EWMA can work in a practical application, we give a
@@ -307,14 +311,14 @@ actual value exceeds the expected trend:
 Lately, sophisticated detection models making use of ARMA models, EWMA and
 EWMA-like metrics have been developed.
 
-### Seasonal anomaly detection for HTTP applications
+### ARMA for anomaly detection in HTTP applications
 
 The article [_Hourly Network Anomaly Detection on HTTP Using Exponential Random
 Graph Models and Autoregressive Moving Average_ (R. Li, M. Tsikerdekis, A.
 Emanuelson - 2022)](https://www.mdpi.com/2624-800X/3/3/22) formalizes a model
 for anomaly detection in structured network infrastructures. The model has been
 used to detect suspicious behaviours in the context of HTTP applications.
-Citing the abstract of the article:
+Citing the article itself:
 
 > We use exponential random graph models (ERGMs) in order to flatten hourly
 > network topological characteristics into a time series, and Autoregressive
@@ -324,5 +328,172 @@ Citing the abstract of the article:
 > and over the HTTP protocol. We demonstrate the effectiveness of our method
 > using real-world data for creating exfiltration scenarios.
 
+_Exponential Random Graph Models_ (_ERGM_), in this context, can be used to
+produce so-called _log-odds coefficients_. Such coefficients are useful to
+estimate if the state of a network is usual or not.
+
+An ARMA model analogous to the one defined in the theoretical introduction was
+used to produce predictions that enable to detect suspicious traffic volumes:
+
+> In our approach, the ARMA is trained first; then, it calculates
+> variable-sized prediction windows for a few points into the future; and if
+> the observations fall outside the range, an alert is raised for an anomalous
+> event.
+
 In the article, the authors point out that the formulated model showed quite
-promising results against _DNS exfiltration_.
+promising results against exfiltration techniques.
+
+### Enhanced EWMA for false positives reduction
+
+The article [An Enhanced EWMA for Alert Reduction and Situation Awareness in
+Industrial Control Networks (B. Jiang, Y. Liu et al. -
+2022)](https://ieeexplore.ieee.org/document/9926545) shows how an enhanced
+version of EWMA can be used to drastically reduce the number of alerts raised
+by IDSs. Citing the article itself:
+
+> IDSs typically generate a huge number of alerts, which are time-consuming for
+> system operators to process. Most of the alerts are individually
+> insignificant false alarms. However, it is not the best solution to discard
+> these alerts, as they can still provide useful information about network
+> situation. Based on the study of characteristics of alerts in the industrial
+> control systems, we adopt an enhanced method of exponentially weighted moving
+> average (EWMA) control charts to help operators in processing alerts.
+
+The work is developed in the context of _Industrial Control Networks_ (_ICNs_),
+inwhich a huge number of alerts is triggered, most of them being false
+positives. The key idea is that an EWMA model is used on the number of alerts
+itself to determine if, at a given time, the volume and type of them is usual
+(and therefore not representing suspicious activity) or not.
+
+#### Enhanced EWMA
+
+The _Enhanced EWMA_ sets upper and lower control limits (i.e. _UCL_ and _LCL_)
+to mitigate EWMA over-adjusting. Such values are used as thresholds in outlier
+detection. Formally, they are defined like below:
+
+<div>
+$$
+    \begin{cases}
+        \text{UCL} &= U \dot e_p(i) \\
+        \text{LCL} &= -U \dot e_p(i)
+    \end{cases}
+$$
+</div>
+
+First, $U$ is the _control limit factor_, i.e. a parameter scaling acceptable
+ranges. $e_p(i)$ is the _estimate prediction error_ for the actual prediction
+error $e(i + 1)$ (i.e. the _one-step-ahead prediction error_) and is defined as
+follows:
+
+<div>
+$$
+    e^2_p(i) = \max \{ \alpha e^2(i) + (1 - \alpha) e^2_p(i - 1) \quad , \quad \sigma^2_e  \}
+$$
+</div>
+
+where $\sigma^2_e$ is the variance of the prediction error. This definition of
+$e_p$ actually makes the EWMA model _residual-based_.
+
+#### Experiments and results
+
+Experiments and performance measurements were conducted over a real, big,
+reliable dataset:
+
+> We obtained nearly 600,000 alerts generated by the IDS of a power grid
+> company’s automation control system in June, 2021. This is a typical
+> communication network in the ICS scenario where encryption and isolation
+> measures are adopted to the communication between hosts. The network
+> behaviors of the hosts are strictly restricted, and rigorous signatures are
+> applied to the IDS for the sake of security.
+
+Regarding the results and evaluations, the authors immediately pointed out the
+intrinsic evaluation difficulties:
+
+> As the real-world data set lacks labels for malicious network attacks and
+> other security events, it is difficult to evaluate our method using metrics
+> like accuracy, precision and recall.
+
+However, the actual volume of alerts raised by the model was drastically
+reduced. Moreover, cases in the resulting data were spot; in such cases, it was
+quite clear that the level of alerts increased drastically, in a much more
+recognizable way compared to a bare IDS.
+
+### $\phi$-entropy based self-adaptive threshold EWMA for anomaly detection
+
+The article [Self-adaptive Threshold Traffic Anomaly Detection Based on
+$\phi$-Entropy and the Improved EWMA Model (M. Deng, B. Wu -
+2020)](https://ieeexplore.ieee.org/document/9084673) formalizes an enhanced
+EWMA model featuring self-adaptive threshold based on $\phi$-entropy.
+
+The article is very technical, formal analysis of a novel EWMA model for
+anomaly detection. It delivers own proved theorems and is a wonderful piece of
+research.
+
+In the abstract, the authors clearly explain the rationale behind their work:
+
+> Most of traffic anomaly detection algorithms use a fixed threshold for
+> anomaly judgment, but these methods cannot keep a high detection accuracy in
+> numerous cases. Aiming at this problem, this paper proposes a method to
+> generate a self-adaptive threshold based on the improved Exponentially
+> Weighted Moving Average (EWMA) model. The method predicts the value of
+> φ-Entropy at the next moment and further generate the threshold. Results of
+> simulation and experiment show that the algorithm can effectively detect
+> abnormal network traffic
+
+#### Model description
+
+The idea behind the proposed model is quite clever and creative. Again, the
+article itself provide a succint and crystal clear explaination:
+
+> The $phi$-Entropy is used to describe the autocorrelation of network traffic.
+> The improved EWMA model is used to predict the $phi$-Entropy at the next
+> moment and further generate the adaptive threshold. The obtained threshold is
+> used to determine whether the traffic at the next moment is anomaly traffic
+> or not.
+
+The improvement of the classic EWMA model is achieved with two modifications:
+
+1. a slide-window model using just a small number of recent data is used to
+   compute the next predicted value
+2. the $\alpha$ parameter is recomputed at each prediction; the computation is
+   done by interpolation of two intermediate values $\alpha_{\text{high}}$ and
+   $\alpha_{\text{low}}$, which are based on the speed of data change
+
+The model thresholds can be adapted at every prediction as below:
+
+<div>
+$$
+    [\bar{y} - \sigma, \bar{y} + \sigma]
+$$
+</div>
+
+where \sigma is the floating range and $\bar{y}$ is the predicted value. The
+traffic can be evaluated in the following way:
+
+<div>
+$$
+\begin{cases}
+    \text{traffic is normal} & \text{if} \bar{y_t} - \sigma \le y_t \le \bar{y_t} + \sigma \\
+    \text{traffic is suspicious} & \text{otherwise}
+\end{cases}
+$$
+</div>
+
+#### Experiments and results
+
+In order to evaluate the performance of the model, the following metrics have
+been used:
+
+* _ACC_: Accuracy
+* _DR_: Detection Rate
+* _FAR_: False Alarm Rate
+
+With various parameters, the model showed very good results:
+
+* The estimated _ACC_ was always over 90% but for one time
+* The estimated _DR_ was consistently around 98%, being at 97% just once
+* The estimated _FAR_ was always under 5%
+
+The authors claimed that their model actually outperformed existing
+alternatives (such as joint-entropy or Shannon entropy based models) in both
+_DR_ and _FAR_.
