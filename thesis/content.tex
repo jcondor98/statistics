@@ -1,0 +1,529 @@
+\section{Introduction}\label{introduction}
+
+The world of cyber threats has evolved massively. The complexity,
+sophistication and diversification of modern cyberattacks called for the
+development of novel, technique-agnostic detection methods in the field
+of cybersecurity.
+
+In this context, statistics plays a crucial role. Indeed, in many
+scenarios it allows to build detection systems capable of identifying
+threats regardless of their technical nature, and in the presence of
+usual, legit activity.
+
+In particular, statistical \emph{online algorithms} allow building
+real-time, numerically stable, noise-resistant, computationally
+efficient models for fast and reliable threat detection.
+
+Statistical \emph{Autoregressive Moving Average} models can be very
+effective in achieving such goal. They are often relatively easy to
+build and deploy, customizable via parameterization, and can take into
+account contextual stochastic processes (e.g. noise or errors).
+Moreover, they can be built to be self-adjusting to some extent,
+especially when they are needed to evolve in relation to time.
+
+\subsection{Solutions for anomaly and threat
+detection}\label{solutions-for-anomaly-and-threat-detection}
+
+Threat detection is a key field in cybersecurity. Many solutions have
+been developed to tackle the necessity of early detection in order to
+preemptively deal with ongoing threats. Many of such solutions make
+extensive use of statistical algorithms.
+
+\emph{Intrusion Detection Systems} are a perfect example in this
+context. An IDS is a piece of software that monitors a system or network
+in order to detect suspicious activity or policy violations. Such
+solutions often work with high volumes of data, so the algorithms used
+must be efficient and scalable.
+
+Examples of widely used Intrusion Detection Systems are
+\href{https://wazuh.com/}{Wazuh} (OSSEC), \href{https://zeek.org/}{Zeek}
+(formerly Bro IDS) and \href{https://suricata.io/}{Suricata}.
+
+\section{Theoretical background}\label{theoretical-background}
+
+In this section we will give a brief theoretical background necessary to
+properly understand the presented research works.
+
+\subsection{Online algorithms}\label{online-algorithms}
+
+An online algorithm is a statistical algorithm defined in terms of a
+recurrence relation. In practice, this means an online algorithm can
+compute a metric over a huge number of samples by performing small,
+incremental updates. In the context of computer science, this brings a
+number of advantages.
+
+First, online algorithm offer far stronger numerical stability compared
+to batch algorithms. There is a much higher risk of computational errors
+in floating-point operations if big and small numbers are used together.
+Using incremental updates hugely mitigates such risk.
+
+Moreover, a distinctive characteristic of online algorithms is that
+updating the metric is usually computationally cheap. This enables the
+construction of fast and efficient real-time detection systems that can
+process events incrementally.
+
+Lastly, online algorithms are likely to not keep explicit memory of past
+samples, often even being \emph{inline} by nature. For example, an
+online algorithm to compute the \emph{mean} on a dataset numerical
+attribute does not need to keep memory of all the values of such
+attribute, and just needs a fixed amount of memory to work with any
+number of values.
+
+\subsection{Autoregressive Moving
+Average}\label{autoregressive-moving-average}
+
+The \emph{Autoregressive Moving Average} (\emph{ARMA} from now on) is a
+statistical metric used to identify trends in time-series data. The key
+idea is that, in contrast to simple average metrics, the influence of
+past observed data gradually fades, so newer data weights more on the
+metric value. ARMA models are built on top of \emph{Autoregressive
+Models} (i.e. \emph{AR} models) and \emph{Moving Average} models (i.e.
+\emph{MA} models).
+
+A very clear and high-quality introduction to ARMA models is given in
+\href{https://www.stat.berkeley.edu/~ryantibs/timeseries-f23/lectures/arima.pdf}{a
+distinguished lecture by the Berkeley University}.
+
+\subsubsection{Autoregressive models}\label{autoregressive-models}
+
+An AR model represents a stochastic differential equation in which the
+output variable is linearly dependant (in time) on the previous
+deterministic and random input.
+
+The formal definition for an AR model of order \(p\) is given below:
+
+Where \(\phi_1, \dots, \phi_p\) are fixed parameters,
+\(p \in \mathbb{N}\) and \(\omega_*\) are stochastic parameters.
+
+\subsubsection{Moving Average models}\label{moving-average-models}
+
+MA models can be seen as a complement of AR models. Unlike their
+counterpart, MA models evolve linearly with the \emph{error} (i.e. the
+stochastic process) instead of a deterministic input.
+
+The formal definition for an MA model of order \(q\) is given below:
+
+Where \(\theta_1, \dots, \theta_p\) are fixed parameters,
+\(q \in \mathbb{N}\) and \(\omega_*\) are stochastic parameters.
+
+\subsubsection{Autoregressive Moving Average
+models}\label{autoregressive-moving-average-models}
+
+On top of the \(\text{AR}(p)\) and \(\text{MA}(q)\) definitions, the
+\emph{ARMA model} can be formalized:
+
+As by definition ARMA models take into account the influence of
+stochastic processes (e.g. noise), they are often suitable to describe
+realistic scenarios.
+
+\subsection{Exponential Weighted Moving
+Average}\label{exponential-weighted-moving-average}
+
+The \emph{Exponential Weighted Moving Average} (\emph{EWMA} from now on)
+is a statistical metric which can be defined as a special case of the
+ARMA. Specifically, it is a completely deterministic ARMA metric that
+does not take into account the potential influence of stochastic
+processes.
+
+An extensive theoretical explaination on how EWMA works and can be
+implemented in moving models is given in
+\href{https://web.stanford.edu/~boyd/papers/pdf/ewmm.pdf}{an awesome
+article from the Stanford University}.
+
+Let \(x = x_1, x_2, \dots, x_n\) be a vector (i.e. our data). Let
+\(\beta \in
+(0,1)\) be the \emph{forgetting factor}. The \emph{Exponential Weighted
+Moving Average} is defined as follows, as a recurrent relation:
+
+where the \emph{normalization constant} \(\alpha_t\) is defined as:
+
+This EWMA definition allows for efficient, online implementations.
+
+The EWMA can also be defined in a simplified manner with a fixed
+\(alpha\) parameter \(\forall t\):
+
+As already stated, the EWMA can be defined in terms of an
+\(\text{ARMA}(1, 0)\):
+
+In order to eliminate the stochastic process \(\omega_t\) and obtain the
+EWMA definition given before, let:
+
+With those identifications, we can therefore obtain the exact definition
+of an EWMA model. Such obtained definition can be turned into the
+recurrent relation defined at the beginning of this section by
+induction.
+
+\section{Implementations and practical
+use}\label{implementations-and-practical-use}
+
+In this section we will explore how ARMA models can be used in practice.
+We will give some example implementations, and we will also see how
+modern and widely used cybersecurity solution can make use of them. A
+particular focus will be dedicated to the EWMA-based models, which are
+the simplest yet powerful ARMA model to use.
+
+\subsection{EWMA example
+implementation}\label{ewma-example-implementation}
+
+In order to understand how EWMA can work in a practical application, we
+give a basic JavaScript implementation below:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{export} \KeywordTok{class}\NormalTok{ Ewma \{}
+    \FunctionTok{constructor}\NormalTok{(\{ beta}\OperatorTok{,}\NormalTok{ current }\OperatorTok{=} \DecValTok{0}\OperatorTok{,}\NormalTok{ t }\OperatorTok{=} \DecValTok{0}\OperatorTok{,}\NormalTok{ increment }\OperatorTok{=} \DecValTok{1}\NormalTok{ \}) \{}
+        \KeywordTok{this}\OperatorTok{.}\AttributeTok{beta} \OperatorTok{=}\NormalTok{ beta}
+        \KeywordTok{this}\OperatorTok{.}\AttributeTok{current} \OperatorTok{=}\NormalTok{ current}
+        \KeywordTok{this}\OperatorTok{.}\AttributeTok{t} \OperatorTok{=}\NormalTok{ t}
+        \KeywordTok{this}\OperatorTok{.}\AttributeTok{increment} \OperatorTok{=}\NormalTok{ increment}
+\NormalTok{    \}}
+
+    \FunctionTok{update}\NormalTok{(value}\OperatorTok{,}\NormalTok{ tau }\OperatorTok{=} \KeywordTok{this}\OperatorTok{.}\AttributeTok{t} \OperatorTok{+} \KeywordTok{this}\OperatorTok{.}\AttributeTok{increment}\NormalTok{) \{}
+        \KeywordTok{const}\NormalTok{ alphaT }\OperatorTok{=} \KeywordTok{this}\OperatorTok{.}\FunctionTok{alpha}\NormalTok{()}
+        \KeywordTok{const}\NormalTok{ alphaTau }\OperatorTok{=} \KeywordTok{this}\OperatorTok{.}\FunctionTok{alpha}\NormalTok{(tau)}
+        \KeywordTok{this}\OperatorTok{.}\AttributeTok{current} \OperatorTok{=}
+\NormalTok{            alphaTau }\OperatorTok{/}\NormalTok{ alphaT }\OperatorTok{*} \KeywordTok{this}\OperatorTok{.}\AttributeTok{beta} \OperatorTok{*} \KeywordTok{this}\OperatorTok{.}\AttributeTok{current} \OperatorTok{+}\NormalTok{ alphaTau }\OperatorTok{*}\NormalTok{ value}
+        \ControlFlowTok{return} \KeywordTok{this}\OperatorTok{.}\AttributeTok{current}
+\NormalTok{    \}}
+
+    \FunctionTok{alpha}\NormalTok{(t }\OperatorTok{=} \KeywordTok{this}\OperatorTok{.}\AttributeTok{t}\NormalTok{) \{}
+        \ControlFlowTok{return}\NormalTok{ (}\DecValTok{1} \OperatorTok{{-}} \KeywordTok{this}\OperatorTok{.}\AttributeTok{beta}\NormalTok{) }\OperatorTok{/}\NormalTok{ (}\DecValTok{1} \OperatorTok{{-}} \BuiltInTok{Math}\OperatorTok{.}\FunctionTok{pow}\NormalTok{(beta}\OperatorTok{,}\NormalTok{ t))}
+\NormalTok{    \}}
+
+    \FunctionTok{batch}\NormalTok{(data }\OperatorTok{=}\NormalTok{ []) \{}
+        \ControlFlowTok{return}\NormalTok{ data}\OperatorTok{.}\FunctionTok{map}\NormalTok{((x}\OperatorTok{,}\NormalTok{ i) }\KeywordTok{=\textgreater{}}
+            \KeywordTok{this}\OperatorTok{.}\FunctionTok{update}\NormalTok{(value}\OperatorTok{,}\NormalTok{ i }\OperatorTok{+} \KeywordTok{this}\OperatorTok{.}\AttributeTok{t} \OperatorTok{+} \KeywordTok{this}\OperatorTok{.}\AttributeTok{increment}\NormalTok{))}
+\NormalTok{    \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+The class defined above can be used like so:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{const}\NormalTok{ ewma }\OperatorTok{=} \KeywordTok{new} \FunctionTok{Ewma}\NormalTok{(\{ }\DataTypeTok{beta}\OperatorTok{:} \FloatTok{0.5}\NormalTok{ \})}
+\KeywordTok{const}\NormalTok{ data }\OperatorTok{=}\NormalTok{ [}\DecValTok{1}\OperatorTok{,} \FloatTok{1.1}\OperatorTok{,} \FloatTok{1.2}\OperatorTok{,} \DecValTok{2}\OperatorTok{,} \FloatTok{1.5}\OperatorTok{,} \DecValTok{2}\NormalTok{]}
+
+\CommentTok{// Batch use: Perform EWMA computation over a given dataset}
+\KeywordTok{let}\NormalTok{ ewmaValues }\OperatorTok{=}\NormalTok{ ewma}\OperatorTok{.}\FunctionTok{batch}\NormalTok{(beta}\OperatorTok{,}\NormalTok{ data)}
+
+\CommentTok{// Incremental use: Update the EWMA value online with a new datum}
+\KeywordTok{const}\NormalTok{ updated }\OperatorTok{=}\NormalTok{ ewma}\OperatorTok{.}\FunctionTok{update}\NormalTok{(}\DecValTok{1}\NormalTok{)}
+\NormalTok{ewmaValues}\OperatorTok{.}\FunctionTok{push}\NormalTok{(updated) }\CommentTok{// Do something with the updated EWMA value}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{EWMA usage in threat
+detection}\label{ewma-usage-in-threat-detection}
+
+In the context of cybersecurity, the EWMA is a useful metric to early
+detect anomalies, especially for network traffic and CPU usage. More
+specifically, it can be used to detect strong and deviations from an
+expected trend.
+
+EWMA and EWMA-like algorithms can be easily implemented in widely used
+IDS solutions. In Zeek, we can compute real EWMA metrics using its own
+scripting language. For example, to detect network traffic anomaly
+per-host:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{global ewma: table[addr] of double = table();}
+\NormalTok{global alpha = 0.2;}
+\NormalTok{global threshold\_factor = 5;}
+
+\NormalTok{event connection\_state\_remove(c: connection) \{}
+\NormalTok{    local host = c$id$orig\_h;}
+\NormalTok{    local x = c$orig$size;}
+
+\NormalTok{    if (host !in ewma)}
+\NormalTok{        ewma[host] = x;}
+\NormalTok{    else}
+\NormalTok{        ewma[host] = alpha * x + (1 {-} alpha) * ewma[host];}
+
+\NormalTok{    if (x \textgreater{} threshold\_factor * ewma[h])}
+\NormalTok{        NOTICE([$note=Traffic\_Anomaly,}
+\NormalTok{                $msg=fmt("Traffic anomaly detected for host: \%s", host)]);}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+We can notice that in this implementation we used a slightly, simplified
+EWMA definition with a fixed value \(\alpha\). This works perfectly fine
+in practical applications.
+
+In other solutions not supporting real EWMA estimation, we can mimic an
+EWMA-like metric using frequency-based analysis. For example, in Wazuh
+we can monitor the login failure rate of a given service and signal an
+anomaly if the actual value exceeds the expected trend:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{\textless{}}\KeywordTok{rule}\OtherTok{ id=}\StringTok{"123456"}\OtherTok{ level=}\StringTok{"7"}\NormalTok{\textgreater{}}
+\NormalTok{  \textless{}}\KeywordTok{if\_matched\_sid}\NormalTok{\textgreater{}1234\textless{}/}\KeywordTok{if\_matched\_sid}\NormalTok{\textgreater{}}
+\NormalTok{  \textless{}}\KeywordTok{frequency}\NormalTok{\textgreater{}10\textless{}/}\KeywordTok{frequency}\NormalTok{\textgreater{}}
+\NormalTok{  \textless{}}\KeywordTok{timeframe}\NormalTok{\textgreater{}60\textless{}/}\KeywordTok{timeframe}\NormalTok{\textgreater{}}
+\NormalTok{  \textless{}}\KeywordTok{description}\NormalTok{\textgreater{}Possible brute{-}force (rate anomaly)\textless{}/}\KeywordTok{description}\NormalTok{\textgreater{}}
+\NormalTok{\textless{}/}\KeywordTok{rule}\NormalTok{\textgreater{}}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Research}\label{research}
+
+Lately, sophisticated detection models making use of ARMA models, EWMA
+and EWMA-like metrics have been developed.
+
+\subsection{ARMA for anomaly detection in HTTP
+applications}\label{arma-for-anomaly-detection-in-http-applications}
+
+The article \href{https://www.mdpi.com/2624-800X/3/3/22}{\emph{Hourly
+Network Anomaly Detection on HTTP Using Exponential Random Graph Models
+and Autoregressive Moving Average} (R. Li, M. Tsikerdekis, A. Emanuelson
+- 2022)} formalizes a model for anomaly detection in structured network
+infrastructures. The model has been used to detect suspicious behaviors
+in the context of HTTP applications. Citing the article itself:
+
+\begin{quote}
+We use exponential random graph models (ERGMs) in order to flatten
+hourly network topological characteristics into a time series, and
+Autoregressive Moving Average (ARMA) to analyze that time series and to
+detect potential attacks. In particular, we extend our previous method
+in not only demonstrating detection over hourly data but also through
+labeling of nodes and over the HTTP protocol. We demonstrate the
+effectiveness of our method using real-world data for creating
+exfiltration scenarios.
+\end{quote}
+
+\emph{Exponential Random Graph Models} (\emph{ERGM}), in this context,
+can be used to produce so-called \emph{log-odds coefficients}. Such
+coefficients are useful to estimate if the state of a network is usual
+or not.
+
+An ARMA model analogous to the one defined in the theoretical
+introduction was used to produce predictions that enable to detect
+suspicious traffic volumes:
+
+\begin{quote}
+In our approach, the ARMA is trained first; then, it calculates
+variable-sized prediction windows for a few points into the future; and
+if the observations fall outside the range, an alert is raised for an
+anomalous event.
+\end{quote}
+
+In the article, the authors point out that the formulated model showed
+quite promising results against exfiltration techniques.
+
+\subsection{Enhanced EWMA for false positives
+reduction}\label{enhanced-ewma-for-false-positives-reduction}
+
+The article \href{https://ieeexplore.ieee.org/document/9926545}{An
+Enhanced EWMA for Alert Reduction and Situation Awareness in Industrial
+Control Networks (B. Jiang, Y. Liu et al. - 2022)} shows how an enhanced
+version of EWMA can be used to drastically reduce the number of alerts
+raised by IDSs. Citing the article itself:
+
+\begin{quote}
+IDSs typically generate a huge number of alerts, which are
+time-consuming for system operators to process. Most of the alerts are
+individually insignificant false alarms. However, it is not the best
+solution to discard these alerts, as they can still provide useful
+information about network situation. Based on the study of
+characteristics of alerts in the industrial control systems, we adopt an
+enhanced method of exponentially weighted moving average (EWMA) control
+charts to help operators in processing alerts.
+\end{quote}
+
+The work is developed in the context of \emph{Industrial Control
+Networks} (\emph{ICNs}), in which a huge number of alerts is triggered,
+most of them being false positives. The key idea is that an EWMA model
+is used on the number of alerts itself to determine if, at a given time,
+the volume and type of them is usual (and therefore not representing
+suspicious activity) or not.
+
+\subsubsection{Enhanced EWMA}\label{enhanced-ewma}
+
+The \emph{Enhanced EWMA} sets upper and lower control limits (i.e.
+\emph{UCL} and \emph{LCL}) to mitigate EWMA over-adjusting. Such values
+are used as thresholds in outlier detection. Formally, they are defined
+like below:
+
+First, \(U\) is the \emph{control limit factor}, i.e. a parameter
+scaling acceptable ranges. \(e_p(i)\) is the \emph{estimate prediction
+error} for the actual prediction error \(e(i + 1)\) (i.e. the
+\emph{one-step-ahead prediction error}) and is defined as follows:
+
+Where \(\sigma^2_e\) is the variance of the prediction error. This
+definition of \(e_p\) actually makes the EWMA model
+\emph{residual-based}.
+
+\subsubsection{Experiments and results}\label{experiments-and-results}
+
+Experiments and performance measurements were conducted over a real,
+big, reliable dataset:
+
+\begin{quote}
+We obtained nearly 600,000 alerts generated by the IDS of a power grid
+company's automation control system in June, 2021. This is a typical
+communication network in the ICS scenario where encryption and isolation
+measures are adopted to the communication between hosts. The network
+behaviors of the hosts are strictly restricted, and rigorous signatures
+are applied to the IDS for the sake of security.
+\end{quote}
+
+Regarding the results and evaluations, the authors immediately pointed
+out the intrinsic evaluation difficulties:
+
+\begin{quote}
+As the real-world data set lacks labels for malicious network attacks
+and other security events, it is difficult to evaluate our method using
+metrics like accuracy, precision and recall.
+\end{quote}
+
+However, the actual volume of alerts raised by the model was drastically
+reduced. Moreover, cases in the resulting data were spot; in such cases,
+it was quite clear that the level of alerts increased drastically, in a
+much more recognizable way compared to a bare IDS.
+
+\subsection{\texorpdfstring{\(\phi\)-entropy and EWMA for anomaly
+detection}{\textbackslash phi-entropy and EWMA for anomaly detection}}\label{phi-entropy-and-ewma-for-anomaly-detection}
+
+The article
+\href{https://ieeexplore.ieee.org/document/9084673}{Self-adaptive
+Threshold Traffic Anomaly Detection Based on \(\phi\)-Entropy and the
+Improved EWMA Model (M. Deng, B. Wu - 2020)} formalizes an enhanced EWMA
+model featuring self-adaptive threshold based on \(\phi\)-entropy.
+
+The article is very technical, formal analysis of a novel EWMA model for
+anomaly detection. It delivers own proved theorems and is a wonderful
+piece of research.
+
+In the abstract, the authors clearly explain the rationale behind their
+work:
+
+\begin{quote}
+Most of traffic anomaly detection algorithms use a fixed threshold for
+anomaly judgment, but these methods cannot keep a high detection
+accuracy in numerous cases. Aiming at this problem, this paper proposes
+a method to generate a self-adaptive threshold based on the improved
+Exponentially Weighted Moving Average (EWMA) model. The method predicts
+the value of \(phi\)-Entropy at the next moment and further generate the
+threshold. Results of simulation and experiment show that the algorithm
+can effectively detect abnormal network traffic
+\end{quote}
+
+\subsubsection{Model description}\label{model-description}
+
+The idea behind the proposed model is quite clever and creative. Again,
+the article itself provide a succinct and crystal clear explanation:
+
+\begin{quote}
+The \(phi\)-Entropy is used to describe the autocorrelation of network
+traffic. The improved EWMA model is used to predict the \(phi\)-Entropy
+at the next moment and further generate the adaptive threshold. The
+obtained threshold is used to determine whether the traffic at the next
+moment is anomaly traffic or not.
+\end{quote}
+
+The improvement of the classic EWMA model is achieved with two
+modifications:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  a slide-window model using just a few recent data is used to compute
+  the next predicted value
+\item
+  the \(\alpha\) parameter is recomputed at each prediction; the
+  computation is done by interpolation of two intermediate values
+  \(\alpha_{\text{high}}\) and \(\alpha_{\text{low}}\), which are based
+  on the speed of data change
+\end{enumerate}
+
+The model thresholds can be adapted at every prediction as below:
+
+Where \textbackslash sigma is the floating range and \(\overline{y}\) is
+the predicted value. The traffic can be evaluated in the following way:
+
+\subsubsection{Experiments and results}\label{experiments-and-results-1}
+
+In order to evaluate the performance of the model, the following metrics
+have been used:
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{ACC}: Accuracy
+\item
+  \emph{DR}: Detection Rate
+\item
+  \emph{FAR}: False Alarm Rate
+\end{itemize}
+
+With various parameters, the model showed very good results:
+
+\begin{itemize}
+\tightlist
+\item
+  The estimated \emph{ACC} was always over 90\% but for one time
+\item
+  The estimated \emph{DR} was consistently around 98\%, being at 97\%
+  just once
+\item
+  The estimated \emph{FAR} was always under 5\%
+\end{itemize}
+
+Complete results are given below with the corresponding parameters.
+
+\begin{longtable}[]{@{}llllll@{}}
+\toprule\noalign{}
+\(w\) & \(\beta\) & \(\alpha\) & ACC/\% & DR/\% & FAR/\% \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+5 & 0.5 & 0.6 & 93.81 & 98.71 & 3.61 \\
+10 & 0.5 & 0.6 & 94.01 & 98.54 & 3.42 \\
+20 & 0.5 & 0.6 & 95.17 & 98.10 & 3.17 \\
+5 & 1.0 & 0.6 & 93.01 & 98.91 & 3.87 \\
+10 & 1.0 & 0.6 & 93.71 & 98.11 & 3.71 \\
+20 & 1.0 & 0.6 & 94.21 & 97.13 & 3.65 \\
+5 & 1.5 & 0.6 & 93.17 & 99.11 & 4.01 \\
+10 & 1.5 & 0.6 & 94.31 & 98.67 & 3.94 \\
+20 & 1.5 & 0.6 & 95.71 & 98.77 & 3.83 \\
+20 & 1.5 & 0.5 & 93.81 & 98.71 & 4.07 \\
+20 & 1.5 & 0.4 & 90.74 & 98.66 & 4.51 \\
+20 & 1.5 & 0.3 & 87.64 & 98.70 & 4.55 \\
+\end{longtable}
+
+The authors claimed that their model actually outperformed existing
+alternatives (such as joint-entropy or Shannon entropy based models) in
+both \emph{DR} and \emph{FAR}.
+
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+Algorithm & DR/\% & FAR/\% \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Based on joint-entropy & 95.30 & 4.76 \\
+Based on entropy and DNN & 93.78 & 6.21 \\
+Based on Shannon entropy & 93.50 & 5.5 \\
+Proposed algorithm & 98.71 & 4.07 \\
+\end{longtable}
+
+\section{Conclusions}\label{conclusions}
+
+We have shown how Autoregressive Moving Average models can play a key
+role in anomaly and threat detection. After giving a theoretical
+introduction, we have shown how such models can be used in both
+existing, widely adopted solutions and cutting-edge research
+applications.
+
+For the latter, we have shown how ARMA models can be used to both
+improve the detection process and overall accuracy and enhance existing
+anomaly detection solutions. Of course, in this context we have shown
+just a small portion of existing works. The research ecosystem in this
+field is vast and continuously evolving.

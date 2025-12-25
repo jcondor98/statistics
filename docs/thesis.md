@@ -19,7 +19,7 @@ In this context, statistics plays a crucial role. Indeed, in many scenarios it
 allows to build detection systems capable of identifying threats regardless of
 their technical nature, and in the presence of usual, legit activity.
 
-In particular, statistical _online algorithms_ allow to build real-time,
+In particular, statistical _online algorithms_ allow building real-time,
 numerically stable, noise-resistant, computationally efficient models for fast
 and reliable threat detection.
 
@@ -49,7 +49,7 @@ IDS) and [Suricata](https://suricata.io/).
 ## Theoretical background
 
 In this section we will give a brief theoretical background necessary to
-properly understand the presented reaserch works.
+properly understand the presented research works.
 
 ### Online algorithms
 
@@ -89,7 +89,7 @@ University](https://www.stat.berkeley.edu/~ryantibs/timeseries-f23/lectures/arim
 
 #### Autoregressive models
 
-An AR model represents a stochastic differential equation inwhich the output
+An AR model represents a stochastic differential equation in which the output
 variable is linearly dependant (in time) on the previous deterministic and
 random input.
 
@@ -101,7 +101,7 @@ $$
 $$
 </div>
 
-where $\phi_1, \dots, \phi_p$ are fixed parameters, $p \in \mathbb{N}$ and
+Where $\phi_1, \dots, \phi_p$ are fixed parameters, $p \in \mathbb{N}$ and
 $\omega_*$ are stochastic parameters.
 
 #### Moving Average models
@@ -110,7 +110,7 @@ MA models can be seen as a complement of AR models. Unlike their counterpart,
 MA models evolve linearly with the _error_ (i.e. the stochastic process)
 instead of a deterministic input.
 
-The formal definition for a MA model of order $q$ is given below:
+The formal definition for an MA model of order $q$ is given below:
 
 <div>
 $$
@@ -120,7 +120,7 @@ $$
 $$
 </div>
 
-where $\theta_1, \dots, \theta_p$ are fixed parameters, $q \in \mathbb{N}$ and
+Where $\theta_1, \dots, \theta_p$ are fixed parameters, $q \in \mathbb{N}$ and
 $\omega_*$ are stochastic parameters.
 
 #### Autoregressive Moving Average models
@@ -156,7 +156,7 @@ defined as follows, as a recurrent relation:
 
 <div>
 $$
-\tilde{x}_{t+1} = \frac{\alpha_{t+1}}{\alpha_t} \beta \tilde{x}_t + \alpha_{t+1} x_{t+1}
+\tilde{x}_{t+1} = \frac{\alpha_{t+1}}{\alpha_t} \beta \ \tilde{x}_t + \alpha_{t+1} \ x_{t+1}
 $$
 </div>
 
@@ -183,7 +183,7 @@ As already stated, the EWMA can be defined in terms of an $\text{ARMA}(1, 0)$:
 
 <div>
 $$
-\text{ARMA}(1, 0) = y_t = \omega_t + \phi y_{t - i}
+\text{ARMA}(1, 0) = y_t = \omega_t + \phi \ y_{t - i}
 $$
 </div>
 
@@ -199,7 +199,7 @@ $$
 $$
 </div>
 
-With those identification, we can therefore obtain the exact definition of an
+With those identifications, we can therefore obtain the exact definition of an
 EWMA model. Such obtained definition can be turned into the recurrent relation
 defined at the beginning of this section by induction.
 
@@ -208,8 +208,8 @@ defined at the beginning of this section by induction.
 In this section we will explore how ARMA models can be used in practice. We
 will give some example implementations, and we will also see how modern and
 widely used cybersecurity solution can make use of them. A particular focus
-will be dedicated to the EWMA-based models, which are the most simple yet
-powerful ARMA model to use.
+will be dedicated to the EWMA-based models, which are the simplest yet powerful
+ARMA model to use.
 
 ### EWMA example implementation
 
@@ -292,7 +292,7 @@ We can notice that in this implementation we used a slightly, simplified EWMA
 definition with a fixed value $\alpha$. This works perfectly fine in practical
 applications.
 
-In other solutions not supporting real EWMA estimation, we can mimick an
+In other solutions not supporting real EWMA estimation, we can mimic an
 EWMA-like metric using frequency-based analysis. For example, in Wazuh we can
 monitor the login failure rate of a given service and signal an anomaly if the
 actual value exceeds the expected trend:
@@ -317,8 +317,8 @@ The article [_Hourly Network Anomaly Detection on HTTP Using Exponential Random
 Graph Models and Autoregressive Moving Average_ (R. Li, M. Tsikerdekis, A.
 Emanuelson - 2022)](https://www.mdpi.com/2624-800X/3/3/22) formalizes a model
 for anomaly detection in structured network infrastructures. The model has been
-used to detect suspicious behaviours in the context of HTTP applications.
-Citing the article itself:
+used to detect suspicious behaviors in the context of HTTP applications. Citing
+the article itself:
 
 > We use exponential random graph models (ERGMs) in order to flatten hourly
 > network topological characteristics into a time series, and Autoregressive
@@ -360,7 +360,7 @@ by IDSs. Citing the article itself:
 > average (EWMA) control charts to help operators in processing alerts.
 
 The work is developed in the context of _Industrial Control Networks_ (_ICNs_),
-inwhich a huge number of alerts is triggered, most of them being false
+in which a huge number of alerts is triggered, most of them being false
 positives. The key idea is that an EWMA model is used on the number of alerts
 itself to determine if, at a given time, the volume and type of them is usual
 (and therefore not representing suspicious activity) or not.
@@ -391,7 +391,7 @@ $$
 $$
 </div>
 
-where $\sigma^2_e$ is the variance of the prediction error. This definition of
+Where $\sigma^2_e$ is the variance of the prediction error. This definition of
 $e_p$ actually makes the EWMA model _residual-based_.
 
 #### Experiments and results
@@ -418,7 +418,7 @@ reduced. Moreover, cases in the resulting data were spot; in such cases, it was
 quite clear that the level of alerts increased drastically, in a much more
 recognizable way compared to a bare IDS.
 
-### $\phi$-entropy based self-adaptive threshold EWMA for anomaly detection
+### $\phi$-entropy and EWMA for anomaly detection
 
 The article [Self-adaptive Threshold Traffic Anomaly Detection Based on
 $\phi$-Entropy and the Improved EWMA Model (M. Deng, B. Wu -
@@ -436,14 +436,14 @@ In the abstract, the authors clearly explain the rationale behind their work:
 > numerous cases. Aiming at this problem, this paper proposes a method to
 > generate a self-adaptive threshold based on the improved Exponentially
 > Weighted Moving Average (EWMA) model. The method predicts the value of
-> φ-Entropy at the next moment and further generate the threshold. Results of
-> simulation and experiment show that the algorithm can effectively detect
+> $phi$-Entropy at the next moment and further generate the threshold. Results
+> of simulation and experiment show that the algorithm can effectively detect
 > abnormal network traffic
 
 #### Model description
 
 The idea behind the proposed model is quite clever and creative. Again, the
-article itself provide a succint and crystal clear explaination:
+article itself provide a succinct and crystal clear explanation:
 
 > The $phi$-Entropy is used to describe the autocorrelation of network traffic.
 > The improved EWMA model is used to predict the $phi$-Entropy at the next
@@ -453,7 +453,7 @@ article itself provide a succint and crystal clear explaination:
 
 The improvement of the classic EWMA model is achieved with two modifications:
 
-1. a slide-window model using just a small number of recent data is used to
+1. a slide-window model using just a few recent data is used to
    compute the next predicted value
 2. the $\alpha$ parameter is recomputed at each prediction; the computation is
    done by interpolation of two intermediate values $\alpha_{\text{high}}$ and
@@ -463,17 +463,17 @@ The model thresholds can be adapted at every prediction as below:
 
 <div>
 $$
-    [\bar{y} - \sigma, \bar{y} + \sigma]
+    [\overline{y} - \sigma, \overline{y} + \sigma]
 $$
 </div>
 
-where \sigma is the floating range and $\bar{y}$ is the predicted value. The
-traffic can be evaluated in the following way:
+Where \sigma is the floating range and $\overline{y}$ is the predicted value.
+The traffic can be evaluated in the following way:
 
 <div>
 $$
 \begin{cases}
-    \text{traffic is normal} & \text{if} \bar{y_t} - \sigma \le y_t \le \bar{y_t} + \sigma \\
+    \text{traffic is normal} & \text{if} \overline{y_t} - \sigma \le y_t \le \overline{y_t} + \sigma \\
     \text{traffic is suspicious} & \text{otherwise}
 \end{cases}
 $$
@@ -494,6 +494,43 @@ With various parameters, the model showed very good results:
 * The estimated _DR_ was consistently around 98%, being at 97% just once
 * The estimated _FAR_ was always under 5%
 
+Complete results are given below with the corresponding parameters.
+
+| $w$  | $\beta$ | $\alpha$ | ACC/% | DR/%  | FAR/% |
+|------|---------|----------|-------|-------|-------|
+| 5    | 0.5     | 0.6      | 93.81 | 98.71 | 3.61  |
+| 10   | 0.5     | 0.6      | 94.01 | 98.54 | 3.42  |
+| 20   | 0.5     | 0.6      | 95.17 | 98.10 | 3.17  |
+| 5    | 1.0     | 0.6      | 93.01 | 98.91 | 3.87  |
+| 10   | 1.0     | 0.6      | 93.71 | 98.11 | 3.71  |
+| 20   | 1.0     | 0.6      | 94.21 | 97.13 | 3.65  |
+| 5    | 1.5     | 0.6      | 93.17 | 99.11 | 4.01  |
+| 10   | 1.5     | 0.6      | 94.31 | 98.67 | 3.94  |
+| 20   | 1.5     | 0.6      | 95.71 | 98.77 | 3.83  |
+| 20   | 1.5     | 0.5      | 93.81 | 98.71 | 4.07  |
+| 20   | 1.5     | 0.4      | 90.74 | 98.66 | 4.51  |
+| 20   | 1.5     | 0.3      | 87.64 | 98.70 | 4.55  |
+
 The authors claimed that their model actually outperformed existing
 alternatives (such as joint-entropy or Shannon entropy based models) in both
 _DR_ and _FAR_.
+
+| Algorithm                 | DR/%  | FAR/% |
+|---------------------------|-------|-------|
+| Based on joint-entropy    | 95.30 | 4.76  |
+| Based on entropy and DNN  | 93.78 | 6.21  |
+| Based on Shannon entropy  | 93.50 | 5.5   |
+| Proposed algorithm        | 98.71 | 4.07  |
+
+## Conclusions
+
+We have shown how Autoregressive Moving Average models can play a key role in
+anomaly and threat detection. After giving a theoretical introduction, we have
+shown how such models can be used in both existing, widely adopted solutions
+and cutting-edge research applications.
+
+For the latter, we have shown how ARMA models can be used to both improve the
+detection process and overall accuracy and enhance existing anomaly detection
+solutions. Of course, in this context we have shown just a small portion of
+existing works. The research ecosystem in this field is vast and continuously
+evolving.
